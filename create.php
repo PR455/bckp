@@ -7,7 +7,7 @@ ini_set('display_errors', 1);
 $filename = "gas.txt";
 $templateFile = "template.php";
 $mainDir = "gas";
-$successfulUrls = []; // Array untuk menyimpan URL yang berhasil
+$successfulUrls = []; 
 
 try {
    // Baca descriptions.txt untuk title dan deskripsi
@@ -80,36 +80,45 @@ try {
            }
        }
 
-       // Ambil title dan description jika ada
-       $title = isset($descriptions[$line]) ? $descriptions[$line]['title'] : strtoupper($folderName);
-       $desc = isset($descriptions[$line]) ? $descriptions[$line]['desc'] : "Deskripsi untuk $folderName";
+       // Ambil title dan description jika ada, jika tidak gunakan default
+       $brand = trim($line); // Brand name sebelum diproses
+       $title = isset($descriptions[$brand]) ? $descriptions[$brand]['title'] : "Main Website " . strtoupper($folderName);
+       $desc = isset($descriptions[$brand]) ? $descriptions[$brand]['desc'] : "Situs resmi " . strtoupper($folderName) . " terpercaya";
 
-       // Proses template
+       // Debug info
+       // echo "Brand: $brand<br>";
+       // echo "Title: $title<br>";
+       // echo "Desc: $desc<br><br>";
+
+       // Proses template - prioritaskan TITLE dan DESCRIPTION
+       $customContent = $templateContent;
+       
+       // Ganti title dan description dulu
+       $customContent = str_replace('{{TITLE}}', $title, $customContent);
+       $customContent = str_replace('{{DESCRIPTION}}', $desc, $customContent);
+       
+       // Baru ganti variabel lainnya
        $customContent = str_replace(
            [
                '{{BRAND_NAME}}',
                '{{URL_PATH}}',
                '{{AMP_URL}}',
-               '{{BRANDS_NAME}}',
-               '{{TITLE}}',
-               '{{DESCRIPTION}}'
+               '{{BRANDS_NAME}}'
            ],
            [
                strtoupper($folderName),
                $folderURL,
                $ampURL,
-               strtolower($folderName),
-               $title,
-               $desc
+               strtolower($folderName)
            ],
-           $templateContent
+           $customContent
        );
 
        // Tulis file index.php
        $indexPath = "$folderPath/index.php";
        if (file_put_contents($indexPath, $customContent) !== false) {
            echo "🔗 <a href='$folderURL' target='_blank'>$folderURL</a><br>";
-           $successfulUrls[] = $folderURL; // Simpan URL yang berhasil
+           $successfulUrls[] = $folderURL;
        }
    }
 
@@ -172,7 +181,6 @@ try {
    // Tulis robots.txt
    if (file_put_contents('robots.txt', $robotsContent) !== false) {
        echo "✅ Robots.txt berhasil dibuat<br>";
-       // Set permission untuk robots.txt
        chmod('robots.txt', 0644);
    }
 
