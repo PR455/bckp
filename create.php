@@ -7,198 +7,153 @@ ini_set('display_errors', 1);
 $filename = "gas.txt";
 $templateFile = "template.php";
 $mainDir = "gas";
-$successfulUrls = []; 
+$successfulUrls = []; // Array untuk menyimpan URL yang berhasil
 
 try {
-   // Baca descriptions.txt untuk title dan deskripsi
-   $descriptions = [];
-   if (file_exists('descriptions.txt')) {
-       $desc_content = file_get_contents('descriptions.txt');
-       // Split berdasarkan baris kosong ganda
-       $desc_blocks = array_filter(explode("\n\n", $desc_content));
-       
-       foreach($desc_blocks as $block) {
-           // Split per baris
-           $lines = explode("\n", trim($block));
-           if(count($lines) >= 2) {
-               // Baris pertama berisi brand|title
-               $title_parts = explode('|', $lines[0]);
-               if(count($title_parts) === 2) {
-                   $brand = strtolower(trim($title_parts[0])); // Convert ke lowercase
-                   $title = trim($title_parts[1]);
-                   // Baris kedua adalah deskripsi
-                   $desc = trim($lines[1]);
-                   
-                   $descriptions[$brand] = [
-                       'title' => $title,
-                       'desc' => $desc
-                   ];
-               }
-           }
-       }
-   }
+    // Cek file yang diperlukan
+    if (!file_exists($filename)) {
+        throw new Exception("File '$filename' tidak ditemukan.");
+    }
+    if (!file_exists($templateFile)) {
+        throw new Exception("File '$templateFile' tidak ditemukan.");
+    }
 
-   // Cek file yang diperlukan
-   if (!file_exists($filename)) {
-       throw new Exception("File '$filename' tidak ditemukan.");
-   }
-   if (!file_exists($templateFile)) {
-       throw new Exception("File '$templateFile' tidak ditemukan.");
-   }
+    // Baca template
+    $templateContent = file_get_contents($templateFile);
+    if ($templateContent === false) {
+        throw new Exception("Gagal membaca file template.");
+    }
 
-   // Baca template
-   $templateContent = file_get_contents($templateFile);
-   if ($templateContent === false) {
-       throw new Exception("Gagal membaca file template.");
-   }
+    // Buat direktori utama jika belum ada
+    if (!is_dir($mainDir)) {
+        if (!mkdir($mainDir, 0755)) {
+            throw new Exception("Gagal membuat direktori '$mainDir'");
+        }
+    }
 
-   // Buat direktori utama jika belum ada
-   if (!is_dir($mainDir)) {
-       if (!mkdir($mainDir, 0755)) {
-           throw new Exception("Gagal membuat direktori '$mainDir'");
-       }
-   }
+    // Baca keywords
+    $lines = file($filename, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    if ($lines === false) {
+        throw new Exception("Gagal membaca file keywords.");
+    }
 
-   // Baca keywords
-   $lines = file($filename, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-   if ($lines === false) {
-       throw new Exception("Gagal membaca file keywords.");
-   }
+    // Setup domain
+    $currentDomain = $_SERVER['HTTP_HOST'];
 
-   // Setup domain
-   $currentDomain = $_SERVER['HTTP_HOST'];
+    foreach ($lines as $line) {
+        // Proses setiap keyword
+        $folderName = str_replace(' ', '-', trim($line));
+        $folderPath = "$mainDir/$folderName";
+        
+        // URL setup
+        $folderURL = "https://$currentDomain/$folderName";
+        $ampURL = "https://ampmasal.xyz/$folderName";
+        
+        // Buat folder
+        if (!is_dir($folderPath)) {
+            if (!mkdir($folderPath, 0755, true)) {
+                continue;
+            }
+        }
 
-   foreach ($lines as $line) {
-       // Proses setiap keyword
-       $folderName = str_replace(' ', '-', trim($line));
-       $folderPath = "$mainDir/$folderName";
-       
-       // URL setup
-       $folderURL = "https://$currentDomain/$folderName";
-       $ampURL = "https://ampmasal.xyz/$folderName";
-       
-       // Buat folder
-       if (!is_dir($folderPath)) {
-           if (!mkdir($folderPath, 0755, true)) {
-               continue;
-           }
-       }
+        // Proses template
+        $customContent = str_replace(
+            [
+                '{{BRAND_NAME}}',
+                '{{URL_PATH}}',
+                '{{AMP_URL}}',
+                '{{BRANDS_NAME}}'
+            ],
+            [
+                strtoupper($folderName),
+                $folderURL,
+                $ampURL,
+                strtolower($folderName)
+            ],
+            $templateContent
+        );
 
-       // Ambil title dan description, pastikan brand lowercase untuk pencocokan
-       $brand = strtolower(trim($line));
-       if (isset($descriptions[$brand])) {
-           $title = $descriptions[$brand]['title'];
-           $desc = $descriptions[$brand]['desc'];
-       } else {
-           // Default tanpa pengulangan
-           $title = strtoupper($folderName);
-           $desc = "Deskripsi untuk " . strtoupper($folderName);
-       }
+        // Tulis file index.php
+        $indexPath = "$folderPath/index.php";
+        if (file_put_contents($indexPath, $customContent) !== false) {
+            echo "🔗 <a href='$folderURL' target='_blank'>$folderURL</a><br>";
+            $successfulUrls[] = $folderURL; // Simpan URL yang berhasil
+        }
+    }
 
-       // Proses template dengan dua tahap
-       $customContent = $templateContent;
-       
-       // Tahap 1: Ganti title dan description
-       $customContent = str_replace('{{TITLE}}', $title, $customContent);
-       $customContent = str_replace('{{DESCRIPTION}}', $desc, $customContent);
-       
-       // Tahap 2: Ganti variabel lainnya
-       $customContent = str_replace(
-           [
-               '{{BRAND_NAME}}',
-               '{{URL_PATH}}',
-               '{{AMP_URL}}',
-               '{{BRANDS_NAME}}'
-           ],
-           [
-               strtoupper($folderName),
-               $folderURL,
-               $ampURL,
-               strtolower($folderName)
-           ],
-           $customContent
-       );
+    // Buat/Update .htaccess
+    $htaccess = "RewriteEngine On\n";
+    $htaccess .= "RewriteBase /\n\n";
+    $htaccess .= "# Redirect from /gas/ URLs\n";
+    $htaccess .= "RewriteCond %{THE_REQUEST} \s/+gas/([^\s]+) [NC]\n";
+    $htaccess .= "RewriteRule ^ /%1 [R=301,L,NE]\n\n";
+    $htaccess .= "# Internal rewrite\n";
+    $htaccess .= "RewriteCond %{REQUEST_FILENAME} !-f\n";
+    $htaccess .= "RewriteCond %{REQUEST_FILENAME} !-d\n";
+    $htaccess .= "RewriteCond %{REQUEST_URI} !^/gas/\n";
+    $htaccess .= "RewriteRule ^([^/]+)/?$ gas/$1/ [L,PT]\n\n";
+    $htaccess .= "# Prevent direct gas access\n";
+    $htaccess .= "RewriteCond %{REQUEST_URI} ^/gas/\n";
+    $htaccess .= "RewriteCond %{ENV:REDIRECT_STATUS} ^$\n";
+    $htaccess .= "RewriteRule ^ - [F]\n\n";
+    $htaccess .= "# Disable directory indexing\n";
+    $htaccess .= "Options -Indexes\n\n";
+    $htaccess .= "# Prevent caching\n";
+    $htaccess .= "<IfModule mod_headers.c>\n";
+    $htaccess .= "    Header set Cache-Control \"no-cache, no-store, must-revalidate\"\n";
+    $htaccess .= "    Header set Pragma \"no-cache\"\n";
+    $htaccess .= "    Header set Expires 0\n";
+    $htaccess .= "</IfModule>";
 
-       // Tulis file index.php
-       $indexPath = "$folderPath/index.php";
-       if (file_put_contents($indexPath, $customContent) !== false) {
-           echo "🔗 <a href='$folderURL' target='_blank'>$folderURL</a><br>";
-           $successfulUrls[] = $folderURL;
-       }
-   }
+    if (file_put_contents('.htaccess', $htaccess) === false) {
+        throw new Exception("Gagal membuat file .htaccess");
+    }
 
-   // Buat/Update .htaccess
-   $htaccess = "RewriteEngine On\n";
-   $htaccess .= "RewriteBase /\n\n";
-   $htaccess .= "# Redirect from /gas/ URLs\n";
-   $htaccess .= "RewriteCond %{THE_REQUEST} \s/+gas/([^\s]+) [NC]\n";
-   $htaccess .= "RewriteRule ^ /%1 [R=301,L,NE]\n\n";
-   $htaccess .= "# Internal rewrite\n";
-   $htaccess .= "RewriteCond %{REQUEST_FILENAME} !-f\n";
-   $htaccess .= "RewriteCond %{REQUEST_FILENAME} !-d\n";
-   $htaccess .= "RewriteCond %{REQUEST_URI} !^/gas/\n";
-   $htaccess .= "RewriteRule ^([^/]+)/?$ gas/$1/ [L,PT]\n\n";
-   $htaccess .= "# Prevent direct gas access\n";
-   $htaccess .= "RewriteCond %{REQUEST_URI} ^/gas/\n";
-   $htaccess .= "RewriteCond %{ENV:REDIRECT_STATUS} ^$\n";
-   $htaccess .= "RewriteRule ^ - [F]\n\n";
-   $htaccess .= "# Disable directory indexing\n";
-   $htaccess .= "Options -Indexes\n\n";
-   $htaccess .= "# Prevent caching\n";
-   $htaccess .= "<IfModule mod_headers.c>\n";
-   $htaccess .= "    Header set Cache-Control \"no-cache, no-store, must-revalidate\"\n";
-   $htaccess .= "    Header set Pragma \"no-cache\"\n";
-   $htaccess .= "    Header set Expires 0\n";
-   $htaccess .= "</IfModule>";
+    // Buat sitemap.xml dengan format yang diminta
+    $sitemap = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+    $sitemap .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+    $sitemap .= '<!--' . "\n";
+    $sitemap .= "Created with IncludeHelp XML Sitemap Generator\n";
+    $sitemap .= "https://www.includehelp.com/tools/xml-sitemap-generator.aspx\n";
+    $sitemap .= ' -->' . "\n";
 
-   if (file_put_contents('.htaccess', $htaccess) === false) {
-       throw new Exception("Gagal membuat file .htaccess");
-   }
+    foreach ($successfulUrls as $url) {
+        $sitemap .= "<url>\n";
+        $sitemap .= "\t<loc>" . $url . "</loc>\n";
+        $sitemap .= "\t<lastmod>" . date('Y-m-d') . "</lastmod>\n";
+        $sitemap .= "\t<changefreq>weekly</changefreq>\n";
+        $sitemap .= "\t<priority>1.0</priority>\n";
+        $sitemap .= "</url>\n";
+    }
 
-   // Buat sitemap.xml dengan format yang diminta
-   $sitemap = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-   $sitemap .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
-   $sitemap .= '<!--' . "\n";
-   $sitemap .= "Created with IncludeHelp XML Sitemap Generator\n";
-   $sitemap .= "https://www.includehelp.com/tools/xml-sitemap-generator.aspx\n";
-   $sitemap .= ' -->' . "\n";
+    $sitemap .= "</urlset>";
 
-   foreach ($successfulUrls as $url) {
-       $sitemap .= "<url>\n";
-       $sitemap .= "\t<loc>" . $url . "</loc>\n";
-       $sitemap .= "\t<lastmod>" . date('Y-m-d') . "</lastmod>\n";
-       $sitemap .= "\t<changefreq>weekly</changefreq>\n";
-       $sitemap .= "\t<priority>1.0</priority>\n";
-       $sitemap .= "</url>\n";
-   }
+    // Tulis sitemap.xml
+    if (file_put_contents('sitemap.xml', $sitemap) !== false) {
+        echo "<br>✅ Sitemap.xml berhasil dibuat<br>";
+    }
 
-   $sitemap .= "</urlset>";
+    // Buat robots.txt
+    $robotsContent = "User-agent: *\n";
+    $robotsContent .= "Sitemap: https://" . $currentDomain . "/sitemap.xml";
 
-   // Tulis sitemap.xml
-   if (file_put_contents('sitemap.xml', $sitemap) !== false) {
-       echo "<br>✅ Sitemap.xml berhasil dibuat<br>";
-   }
+    // Tulis robots.txt
+    if (file_put_contents('robots.txt', $robotsContent) !== false) {
+        echo "✅ Robots.txt berhasil dibuat<br>";
+        // Set permission untuk robots.txt
+        chmod('robots.txt', 0644);
+    }
 
-   // Buat robots.txt
-   $robotsContent = "User-agent: *\n";
-   $robotsContent .= "Sitemap: https://" . $currentDomain . "/sitemap.xml";
+    echo "<br>Proses selesai.";
 
-   // Tulis robots.txt
-   if (file_put_contents('robots.txt', $robotsContent) !== false) {
-       echo "✅ Robots.txt berhasil dibuat<br>";
-       chmod('robots.txt', 0644);
-   }
-
-   echo "<br>Proses selesai.";
-
-   // Set permission
-   chmod('.htaccess', 0644);
-   chmod($mainDir, 0755);
-   chmod('sitemap.xml', 0644);
+    // Set permission
+    chmod('.htaccess', 0644);
+    chmod($mainDir, 0755);
+    chmod('sitemap.xml', 0644);
 
 } catch (Exception $e) {
-   echo "<h2>Error:</h2>";
-   echo $e->getMessage();
-   error_log("Create Folders Error: " . $e->getMessage());
+    echo "<h2>Error:</h2>";
+    echo $e->getMessage();
+    error_log("Create Folders Error: " . $e->getMessage());
 }
 ?>
