@@ -8,6 +8,30 @@ $filename = "gas.txt";
 $templateFile = "template.php";
 $mainDir = "gas";
 $successfulUrls = []; // Array untuk menyimpan URL yang berhasil
+$descriptionsFile = "descriptions.txt"; // File untuk title dan deskripsi
+
+// Membaca title dan deskripsi dari file descriptions.txt
+$titles = [];
+$descriptions = [];
+
+if (file_exists($descriptionsFile)) {
+    $descriptionLines = file($descriptionsFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    $tempTitle = '';  // Variabel untuk menyimpan title sementara
+    foreach ($descriptionLines as $line) {
+        // Cek apakah baris berikutnya kosong, jika kosong berarti ini adalah deskripsi
+        if (empty($tempTitle)) {
+            // Baris ini adalah title
+            $tempTitle = trim($line);
+        } else {
+            // Baris ini adalah deskripsi
+            $titles[] = $tempTitle;
+            $descriptions[] = trim($line);
+            $tempTitle = '';  // Reset title
+        }
+    }
+} else {
+    echo "File '$descriptionsFile' tidak ditemukan.<br>";
+}
 
 try {
     // Cek file yang diperlukan
@@ -40,6 +64,8 @@ try {
     // Setup domain
     $currentDomain = $_SERVER['HTTP_HOST'];
 
+    // Loop melalui keyword dan deskripsi
+    $index = 0;
     foreach ($lines as $line) {
         // Proses setiap keyword
         $folderName = str_replace(' ', '-', trim($line));
@@ -48,6 +74,10 @@ try {
         // URL setup
         $folderURL = "https://$currentDomain/$folderName";
         $ampURL = "https://ampmasal.xyz/$folderName";
+        
+        // Ambil title dan deskripsi
+        $title = isset($titles[$index]) ? $titles[$index] : strtoupper($folderName); // Default ke folderName jika tidak ada title
+        $description = isset($descriptions[$index]) ? $descriptions[$index] : 'Deskripsi belum tersedia'; // Default jika deskripsi tidak ada
         
         // Buat folder
         if (!is_dir($folderPath)) {
@@ -62,13 +92,17 @@ try {
                 '{{BRAND_NAME}}',
                 '{{URL_PATH}}',
                 '{{AMP_URL}}',
-                '{{BRANDS_NAME}}'
+                '{{BRANDS_NAME}}',
+                '{{TITLE}}',
+                '{{DESCRIPTION}}'
             ],
             [
                 strtoupper($folderName),
                 $folderURL,
                 $ampURL,
-                strtolower($folderName)
+                strtolower($folderName),
+                $title,         // Menambahkan title
+                $description    // Menambahkan deskripsi
             ],
             $templateContent
         );
@@ -79,6 +113,8 @@ try {
             echo "🔗 <a href='$folderURL' target='_blank'>$folderURL</a><br>";
             $successfulUrls[] = $folderURL; // Simpan URL yang berhasil
         }
+
+        $index++; // Increment untuk ke deskripsi berikutnya
     }
 
     // Buat/Update .htaccess
