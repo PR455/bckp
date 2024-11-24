@@ -14,15 +14,19 @@ try {
    $descriptions = [];
    if (file_exists('descriptions.txt')) {
        $desc_content = file_get_contents('descriptions.txt');
+       // Split berdasarkan baris kosong ganda
        $desc_blocks = array_filter(explode("\n\n", $desc_content));
        
        foreach($desc_blocks as $block) {
+           // Split per baris
            $lines = explode("\n", trim($block));
            if(count($lines) >= 2) {
+               // Baris pertama berisi brand|title
                $title_parts = explode('|', $lines[0]);
                if(count($title_parts) === 2) {
-                   $brand = trim($title_parts[0]);
+                   $brand = strtolower(trim($title_parts[0])); // Convert ke lowercase
                    $title = trim($title_parts[1]);
+                   // Baris kedua adalah deskripsi
                    $desc = trim($lines[1]);
                    
                    $descriptions[$brand] = [
@@ -80,24 +84,24 @@ try {
            }
        }
 
-       // Ambil title dan description jika ada, jika tidak gunakan default
-       $brand = trim($line); // Brand name sebelum diproses
-       $title = isset($descriptions[$brand]) ? $descriptions[$brand]['title'] : "Main Website " . strtoupper($folderName);
-       $desc = isset($descriptions[$brand]) ? $descriptions[$brand]['desc'] : "Situs resmi " . strtoupper($folderName) . " terpercaya";
+       // Ambil title dan description, pastikan brand lowercase untuk pencocokan
+       $brand = strtolower(trim($line));
+       if (isset($descriptions[$brand])) {
+           $title = $descriptions[$brand]['title'];
+           $desc = $descriptions[$brand]['desc'];
+       } else {
+           $title = strtoupper($folderName);
+           $desc = "Deskripsi untuk " . strtoupper($folderName);
+       }
 
-       // Debug info
-       // echo "Brand: $brand<br>";
-       // echo "Title: $title<br>";
-       // echo "Desc: $desc<br><br>";
-
-       // Proses template - prioritaskan TITLE dan DESCRIPTION
+       // Proses template dengan dua tahap
        $customContent = $templateContent;
        
-       // Ganti title dan description dulu
+       // Tahap 1: Ganti title dan description
        $customContent = str_replace('{{TITLE}}', $title, $customContent);
        $customContent = str_replace('{{DESCRIPTION}}', $desc, $customContent);
        
-       // Baru ganti variabel lainnya
+       // Tahap 2: Ganti variabel lainnya
        $customContent = str_replace(
            [
                '{{BRAND_NAME}}',
