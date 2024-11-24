@@ -90,6 +90,7 @@ try {
            $title = $descriptions[$brand]['title'];
            $desc = $descriptions[$brand]['desc'];
        } else {
+           // Default tanpa pengulangan
            $title = strtoupper($folderName);
            $desc = "Deskripsi untuk " . strtoupper($folderName);
        }
