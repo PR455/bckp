@@ -76,9 +76,20 @@ try {
         $ampURL = "https://ampmasal.xyz/$folderName";
         
         // Ambil title dan deskripsi
-        $title = isset($titles[$index]) ? $titles[$index] : strtoupper($folderName); // Default ke folderName jika tidak ada title
-        $description = isset($descriptions[$index]) ? $descriptions[$index] : 'Deskripsi belum tersedia'; // Default jika deskripsi tidak ada
-        
+        if (isset($titles[$index])) {
+            $title = $titles[$index];
+        } else {
+            // Jika title tidak ada, ambil title dari awal
+            $title = $titles[0];
+        }
+
+        if (isset($descriptions[$index])) {
+            $description = $descriptions[$index];
+        } else {
+            // Jika deskripsi tidak ada, ambil deskripsi dari awal
+            $description = $descriptions[0];
+        }
+
         // Buat folder
         if (!is_dir($folderPath)) {
             if (!mkdir($folderPath, 0755, true)) {
