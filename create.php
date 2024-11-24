@@ -66,6 +66,8 @@ try {
 
     // Loop melalui keyword dan deskripsi
     $index = 0;
+    $titleIndex = 0;
+    $descriptionIndex = 0;
     foreach ($lines as $line) {
         // Proses setiap keyword
         $folderName = str_replace(' ', '-', trim($line));
@@ -75,19 +77,20 @@ try {
         $folderURL = "https://$currentDomain/$folderName";
         $ampURL = "https://ampmasal.xyz/$folderName";
         
-        // Ambil title dan deskripsi
-        if (isset($titles[$index])) {
-            $title = $titles[$index];
-        } else {
-            // Jika title tidak ada, ambil title dari awal
-            $title = $titles[0];
-        }
+        // Ambil title dan deskripsi, dengan mengambil ulang dari awal jika tidak cukup
+        $title = $titles[$titleIndex];
+        $description = $descriptions[$descriptionIndex];
 
-        if (isset($descriptions[$index])) {
-            $description = $descriptions[$index];
-        } else {
-            // Jika deskripsi tidak ada, ambil deskripsi dari awal
-            $description = $descriptions[0];
+        // Update indeks untuk title dan deskripsi
+        $titleIndex++;
+        $descriptionIndex++;
+
+        // Jika indeks title/deskripsi melebihi jumlah yang tersedia, reset ke 0 untuk mengambil dari awal
+        if ($titleIndex >= count($titles)) {
+            $titleIndex = 0;
+        }
+        if ($descriptionIndex >= count($descriptions)) {
+            $descriptionIndex = 0;
         }
 
         // Buat folder
