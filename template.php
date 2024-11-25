@@ -778,7 +778,7 @@
                     <a class="highlight" target="_blank" href="https://yida.alibaba-inc.com/alibaba/web/APP_NZEYXSPGPBMKO7Z1LCE5/inst/homepage/?spm=a2o42.home.header.d0.654346b5QeptXc#/" data-spm-click="gostr=/lzdpub.header.tbar;locaid=d0">INTERNAL FEEDBACK</a>
                 </div>
                   <div class="top-links-item" id="topActionFeedback">
-                      <a class="highlight" target="_blank" href="/" data-spm-click="gostr=/lzdpub.header.tbar;locaid=dfeedback">Masukan</a>
+                      <a class="highlight" target="_blank" href="{{URL_PATH}}" data-spm-click="gostr=/lzdpub.header.tbar;locaid=dfeedback">Masukan</a>
                   </div>
                     <div class="top-links-item orange" id="topActionDownload" data-spm-click="gostr=/lzdpub.header.tbar;locaid=d1">
                         <span>Situs Slot</span>
@@ -1997,7 +1997,7 @@
             </div>
         </div>
         <nav class="lzd-menu-labels" data-spm="menu">
-            <a class="lzd-menu-labels-item" href="/">
+            <a class="lzd-menu-labels-item" href="{{URL_PATH}}">
                 <span class="lzd-site-nav-menu-iconfont lzd-menu-labels-item-icon">
                     <img alt="Slot" class="lzd-site-nav-menu-iconfont-img" src="//laz-img-cdn.alicdn.com/images/ims-web/TB1gNcMWBr0gK0jSZFnXXbRRXXa.png">
                 </span>
@@ -2018,7 +2018,7 @@
                 <!--<i class="lzd-site-nav-menu-iconfont lzd-menu-labels-item-icon {{BRANDS_NAME}}-ic-channel-Vouchers">&#xe76a;</i>-->
                         <span class="lzd-menu-labels-item-text">Situs Slot Gacor</span>
             </a>
-            <a class="lzd-menu-labels-item" href="/">
+            <a class="lzd-menu-labels-item" href="{{URL_PATH}}">
                 <span class="lzd-site-nav-menu-iconfont lzd-menu-labels-item-icon">
                     <img alt="Slot Gacor Hari Ini" class="lzd-site-nav-menu-iconfont-img" src="//icms-image.slatic.net/images/ims-web/9174453f-455e-4e30-87d2-bd90239e6994.png">
                 </span>
@@ -2031,7 +2031,7 @@
   </div>
                 </div>
               <div class="lzd-nav-cart">
-                <a href="/" data-spm="dcart"><span class="cart-icon"></span>
+                <a href="{{URL_PATH}}" data-spm="dcart"><span class="cart-icon"></span>
                 <span class="cart-num" id="topActionCartNumber"></span></a>
               </div>
                 <div class="lzd-header-banner" id="topActionLiveUpBanner">
@@ -3078,7 +3078,7 @@
             </div>
         </div>
         <nav class="lzd-menu-labels" data-spm="menu">
-            <a class="lzd-menu-labels-item" href="/">
+            <a class="lzd-menu-labels-item" href="{{URL_PATH}}">
                 <span class="lzd-site-nav-menu-iconfont lzd-menu-labels-item-icon">
                     <img alt="Slot" class="lzd-site-nav-menu-iconfont-img" src="//laz-img-cdn.alicdn.com/images/ims-web/TB1gNcMWBr0gK0jSZFnXXbRRXXa.png">
                 </span>
