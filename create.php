@@ -1,59 +1,94 @@
 <?php
-// Error reporting
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
+// Fungsi untuk membaca file dari path
+function getFileContent($filePath) {
+    if (!file_exists($filePath)) {
+        throw new Exception("File tidak ditemukan di: $filePath");
+    }
+    $content = file_get_contents($filePath);
+    if ($content === false) {
+        throw new Exception("Gagal membaca konten file: $filePath");
+    }
+    return $content;
+}
+
+// Fungsi untuk memastikan URL memiliki trailing slash
+function ensureTrailingSlash($url) {
+    return rtrim($url, '/') . '/';
+}
+
 // Konfigurasi dasar
-$filename = "gas.txt";
-$templateFile = "template.php";
+$filename = $gas_txt; // Menggunakan variable path dari script utama
+$templateFile = $template_php;
 $mainDir = "gas";
-$successfulUrls = []; // Array untuk menyimpan URL yang berhasil
+$successfulUrls = [];
+$descriptionsFile = $descriptions_txt;
+
+// Membaca title dan deskripsi
+$titles = [];
+$descriptions = [];
 
 try {
-    // Cek file yang diperlukan
-    if (!file_exists($filename)) {
-        throw new Exception("File '$filename' tidak ditemukan.");
-    }
-    if (!file_exists($templateFile)) {
-        throw new Exception("File '$templateFile' tidak ditemukan.");
+    $descriptionContent = getFileContent($descriptionsFile);
+    $descriptionLines = explode("\n", $descriptionContent);
+    $tempTitle = '';
+    
+    foreach ($descriptionLines as $line) {
+        $line = trim($line);
+        if (empty($line)) continue;
+        
+        if (empty($tempTitle)) {
+            $tempTitle = $line;
+        } else {
+            $titles[] = $tempTitle;
+            $descriptions[] = $line;
+            $tempTitle = '';
+        }
     }
 
     // Baca template
-    $templateContent = file_get_contents($templateFile);
-    if ($templateContent === false) {
-        throw new Exception("Gagal membaca file template.");
-    }
+    $templateContent = getFileContent($templateFile);
 
-    // Buat direktori utama jika belum ada
+    // Baca keywords
+    $keywordsContent = getFileContent($filename);
+    $lines = explode("\n", $keywordsContent);
+    $lines = array_filter(array_map('trim', $lines));
+
+    // Buat direktori utama
     if (!is_dir($mainDir)) {
         if (!mkdir($mainDir, 0755)) {
             throw new Exception("Gagal membuat direktori '$mainDir'");
         }
     }
 
-    // Baca keywords
-    $lines = file($filename, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    if ($lines === false) {
-        throw new Exception("Gagal membaca file keywords.");
-    }
-
     // Setup domain
     $currentDomain = $_SERVER['HTTP_HOST'];
 
+    // Loop melalui keyword dan deskripsi
+    $titleIndex = 0;
+    $descriptionIndex = 0;
+
     foreach ($lines as $line) {
-        // Proses setiap keyword
         $folderName = str_replace(' ', '-', trim($line));
         $folderPath = "$mainDir/$folderName";
         
-        // URL setup
-        $folderURL = "https://$currentDomain/$folderName";
-        $ampURL = "https://ampmasal.xyz/$folderName";
+        // URL setup dengan memastikan ada trailing slash
+        $folderURL = ensureTrailingSlash("https://$currentDomain/$folderName");
+        $ampURL = ensureTrailingSlash("https://ampmasal.xyz/$folderName");
         
+        // Ambil title dan deskripsi
+        $title = isset($titles[$titleIndex]) ? $titles[$titleIndex] : $titles[0];
+        $description = isset($descriptions[$descriptionIndex]) ? $descriptions[$descriptionIndex] : $descriptions[0];
+
+        // Update indeks
+        $titleIndex = ($titleIndex + 1) % count($titles);
+        $descriptionIndex = ($descriptionIndex + 1) % count($descriptions);
+
         // Buat folder
-        if (!is_dir($folderPath)) {
-            if (!mkdir($folderPath, 0755, true)) {
-                continue;
-            }
+        if (!is_dir($folderPath) && !mkdir($folderPath, 0755, true)) {
+            continue;
         }
 
         // Proses template
@@ -62,13 +97,17 @@ try {
                 '{{BRAND_NAME}}',
                 '{{URL_PATH}}',
                 '{{AMP_URL}}',
-                '{{BRANDS_NAME}}'
+                '{{BRANDS_NAME}}',
+                '{{TITLE}}',
+                '{{DESCRIPTION}}'
             ],
             [
                 strtoupper($folderName),
                 $folderURL,
                 $ampURL,
-                strtolower($folderName)
+                strtolower($folderName),
+                $title,
+                $description
             ],
             $templateContent
         );
@@ -77,13 +116,16 @@ try {
         $indexPath = "$folderPath/index.php";
         if (file_put_contents($indexPath, $customContent) !== false) {
             echo "🔗 <a href='$folderURL' target='_blank'>$folderURL</a><br>";
-            $successfulUrls[] = $folderURL; // Simpan URL yang berhasil
+            $successfulUrls[] = $folderURL;
         }
     }
 
-    // Buat/Update .htaccess
+    // Generate .htaccess dengan aturan untuk memastikan trailing slash
     $htaccess = "RewriteEngine On\n";
     $htaccess .= "RewriteBase /\n\n";
+    $htaccess .= "# Enforce trailing slash\n";
+    $htaccess .= "RewriteCond %{REQUEST_URI} /+[^\.]+$\n";
+    $htaccess .= "RewriteRule ^(.+[^/])$ %{REQUEST_URI}/ [R=301,L]\n\n";
     $htaccess .= "# Redirect from /gas/ URLs\n";
     $htaccess .= "RewriteCond %{THE_REQUEST} \s/+gas/([^\s]+) [NC]\n";
     $htaccess .= "RewriteRule ^ /%1 [R=301,L,NE]\n\n";
@@ -105,11 +147,12 @@ try {
     $htaccess .= "    Header set Expires 0\n";
     $htaccess .= "</IfModule>";
 
+    // Tulis .htaccess
     if (file_put_contents('.htaccess', $htaccess) === false) {
         throw new Exception("Gagal membuat file .htaccess");
     }
 
-    // Buat sitemap.xml dengan format yang diminta
+    // Generate dan tulis sitemap.xml (URLs sudah memiliki trailing slash dari fungsi ensureTrailingSlash)
     $sitemap = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
     $sitemap .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
     $sitemap .= '<!--' . "\n";
@@ -128,25 +171,22 @@ try {
 
     $sitemap .= "</urlset>";
 
-    // Tulis sitemap.xml
     if (file_put_contents('sitemap.xml', $sitemap) !== false) {
         echo "<br>✅ Sitemap.xml berhasil dibuat<br>";
     }
 
-    // Buat robots.txt
+    // Generate dan tulis robots.txt
     $robotsContent = "User-agent: *\n";
-    $robotsContent .= "Sitemap: https://" . $currentDomain . "/sitemap.xml";
+    $robotsContent .= "Sitemap: " . ensureTrailingSlash("https://" . $currentDomain) . "sitemap.xml";
 
-    // Tulis robots.txt
     if (file_put_contents('robots.txt', $robotsContent) !== false) {
         echo "✅ Robots.txt berhasil dibuat<br>";
-        // Set permission untuk robots.txt
         chmod('robots.txt', 0644);
     }
 
     echo "<br>Proses selesai.";
 
-    // Set permission
+    // Set permissions
     chmod('.htaccess', 0644);
     chmod($mainDir, 0755);
     chmod('sitemap.xml', 0644);
@@ -156,4 +196,3 @@ try {
     echo $e->getMessage();
     error_log("Create Folders Error: " . $e->getMessage());
 }
-?>
