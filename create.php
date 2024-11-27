@@ -147,7 +147,6 @@ try {
     }
 
     $currentDomain = $_SERVER['HTTP_HOST'];
-    $titleIndex = $descriptionIndex = $articleIndex = 0;
 
     foreach ($lines as $line) {
         $folderName = str_replace(' ', '-', trim($line));
@@ -167,9 +166,10 @@ try {
             'ARTICLE_CONTENT' => ''
         ];
 
-        $currentTitle = isset($titles[$titleIndex]) ? processContent($titles[$titleIndex], $replacements) : processContent($titles[0], $replacements);
-        $currentDescription = isset($descriptions[$descriptionIndex]) ? processContent($descriptions[$descriptionIndex], $replacements) : processContent($descriptions[0], $replacements);
-        $currentArticle = isset($articles[$articleIndex]) ? formatArticle(processContent($articles[$articleIndex], $replacements)) : formatArticle(processContent($articles[0], $replacements));
+        // Pilih data secara acak
+        $currentTitle = processContent($titles[array_rand($titles)], $replacements);
+        $currentDescription = processContent($descriptions[array_rand($descriptions)], $replacements);
+        $currentArticle = formatArticle(processContent($articles[array_rand($articles)], $replacements));
 
         $replacements['TITLE'] = $currentTitle;
         $replacements['DESCRIPTION'] = $currentDescription;
@@ -188,13 +188,8 @@ try {
             $successfulUrls[] = $folderURL;
             chmod($indexPath, 0644);
         }
-
-        $titleIndex = ($titleIndex + 1) % count($titles);
-        $descriptionIndex = ($descriptionIndex + 1) % count($descriptions);
-        $articleIndex = ($articleIndex + 1) % count($articles);
     }
 
-    // Generate .htaccess - kode asli
     $htaccess = "RewriteEngine On\n";
     $htaccess .= "RewriteBase /\n\n";
     $htaccess .= "# Enforce trailing slash\n";
