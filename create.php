@@ -242,8 +242,6 @@ try {
         $sitemap .= "<url>\n";
         $sitemap .= "\t<loc>" . $url . "</loc>\n";
         $sitemap .= "\t<lastmod>" . date('Y-m-d') . "</lastmod>\n";
-        $sitemap .= "\t<changefreq>weekly</changefreq>\n";
-        $sitemap .= "\t<priority>1.0</priority>\n";
         $sitemap .= "</url>\n";
     }
     
