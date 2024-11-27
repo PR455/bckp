@@ -12,8 +12,8 @@
     <link rel="dns-prefetch" href="https://cdn.ampproject.org">
     <link rel="dns-prefetch" href="https://www.googletagmanager.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <title>{{BRAND_NAME}} {{TITLE}}</title>
-    <meta name="description" content="{{DESCRIPTION}} {{BRAND_NAME}}">
+    <title>{{TITLE}}</title>
+    <meta name="description" content="{{DESCRIPTION}}">
     <meta name="author" content=" {{BRAND_NAME}}">
     <meta name="robots" content="index, follow">
     <meta name="googlebot" content="index, follow">
@@ -45,15 +45,15 @@
     <link rel="icon" type="image/png" sizes="16x16" href="https://pub-d1a3aec6cb0048a9a5c0fee232c4e330.r2.dev/situsbest.png">
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{URL_PATH}}">
-    <meta property="og:title" content="{{BRAND_NAME}} {{TITLE}}">
-    <meta property="og:description" content="{{DESCRIPTION}} {{BRAND_NAME}}">
+    <meta property="og:title" content="{{TITLE}}">
+    <meta property="og:description" content="{{DESCRIPTION}}">
     <meta property="og:image" content="ht https://pub-d1a3aec6cb0048a9a5c0fee232c4e330.r2.dev/slot%20(2).jpg">
     <meta property="og:site_name" content=" {{BRAND_NAME}}">
     <meta property="og:locale" content="id_ID">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="{{URL_PATH}}">
-    <meta name="twitter:title" content="{{BRAND_NAME}} {{TITLE}}">
-    <meta name="twitter:description" content="{{DESCRIPTION}} {{BRAND_NAME}}">
+    <meta name="twitter:title" content="{{TITLE}}">
+    <meta name="twitter:description" content="{{DESCRIPTION}}">
     <meta name="twitter:image" content="https://pub-d1a3aec6cb0048a9a5c0fee232c4e330.r2.dev/slot%20gacor%201.gif">
     <meta name="geo.region" content="ID">
     <meta name="geo.placename" content="Indonesia">
@@ -216,8 +216,8 @@
             "@type": "WebPage",
             "@id": "{{URL_PATH}}"
           },
-          "headline": "{{BRAND_NAME}} {{TITLE}}",
-          "description": "{{DESCRIPTION}} {{BRAND_NAME}}",
+          "headline": "{{TITLE}}",
+          "description": "{{DESCRIPTION}}",
           "image": [
             " https://pub-d1a3aec6cb0048a9a5c0fee232c4e330.r2.dev/slot%20(2).jpg"
           ],
@@ -542,7 +542,7 @@
             </a>
         </div>
         <div class="product-details">
-            <h1 class="product-title">{{BRAND_NAME}} {{TITLE}}</h1>
+            <h1 class="product-title">{{TITLE}}</h1>
             <div class="rating">⭐⭐⭐⭐⭐ 10.832.303 Penilaian</div>
           <strong><div class=" {{BRAND_NAME}}">Merek: SLOT TOGEL YOK BISA YOK</div>
 
