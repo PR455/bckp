@@ -1,5 +1,5 @@
 <!doctype html>
-<html ⚡ lang="id">
+<html ⚡ lang="id"> 
 <head>
     <meta charset="utf-8">
     <script async src="https://cdn.ampproject.org/v0.js"></script>
