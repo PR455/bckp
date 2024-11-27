@@ -1,0 +1,17 @@
+name: Auto Commit Changes
+on:
+  push:
+    paths:
+      - 'bckp/**'
+jobs:
+  commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Auto Commit
+        run: |
+          git config --global user.name 'GitHub Action'
+          git config --global user.email 'action@github.com'
+          git add .
+          git commit -m "Auto-save changes"
+          git push
