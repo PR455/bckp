@@ -20,32 +20,32 @@ function ensureTrailingSlash($url) {
 }
 
 // Konfigurasi dasar
-$filename = $gas_txt; // Menggunakan variable path dari script utama
+$filename = $gas_txt;
 $templateFile = $template_php;
 $mainDir = "gas";
 $successfulUrls = [];
-$descriptionsFile = $descriptions_txt;
+$titlesFile = $title_txt;
+$descriptionsFile1 = $descriptions1_txt;
+$descriptionsFile2 = $descriptions2_txt;
 
 // Membaca title dan deskripsi
 $titles = [];
-$descriptions = [];
 
 try {
-    $descriptionContent = getFileContent($descriptionsFile);
-    $descriptionLines = explode("\n", $descriptionContent);
-    $tempTitle = '';
+    // Baca file titles
+    $titleContent = getFileContent($titlesFile);
+    $titles = array_filter(array_map('trim', explode("\n", $titleContent)));
     
-    foreach ($descriptionLines as $line) {
-        $line = trim($line);
-        if (empty($line)) continue;
-        
-        if (empty($tempTitle)) {
-            $tempTitle = $line;
-        } else {
-            $titles[] = $tempTitle;
-            $descriptions[] = $line;
-            $tempTitle = '';
-        }
+    // Baca file descriptions1
+    $descriptionContent1 = getFileContent($descriptionsFile1);
+    $descriptions1 = array_filter(array_map('trim', explode("\n", $descriptionContent1)));
+    
+    // Baca file descriptions2
+    $descriptionContent2 = getFileContent($descriptionsFile2);
+    $descriptions2 = array_filter(array_map('trim', explode("\n", $descriptionContent2)));
+    
+    if (empty($titles) || empty($descriptions1) || empty($descriptions2)) {
+        throw new Exception("File title atau deskripsi kosong");
     }
 
     // Baca template
@@ -68,7 +68,8 @@ try {
 
     // Loop melalui keyword dan deskripsi
     $titleIndex = 0;
-    $descriptionIndex = 0;
+    $descriptionIndex1 = 0;
+    $descriptionIndex2 = 0;
 
     foreach ($lines as $line) {
         $folderName = str_replace(' ', '-', trim($line));
@@ -80,11 +81,13 @@ try {
         
         // Ambil title dan deskripsi
         $title = isset($titles[$titleIndex]) ? $titles[$titleIndex] : $titles[0];
-        $description = isset($descriptions[$descriptionIndex]) ? $descriptions[$descriptionIndex] : $descriptions[0];
+        $desc1 = isset($descriptions1[$descriptionIndex1]) ? $descriptions1[$descriptionIndex1] : $descriptions1[0];
+        $desc2 = isset($descriptions2[$descriptionIndex2]) ? $descriptions2[$descriptionIndex2] : $descriptions2[0];
 
         // Update indeks
         $titleIndex = ($titleIndex + 1) % count($titles);
-        $descriptionIndex = ($descriptionIndex + 1) % count($descriptions);
+        $descriptionIndex1 = ($descriptionIndex1 + 1) % count($descriptions1);
+        $descriptionIndex2 = ($descriptionIndex2 + 1) % count($descriptions2);
 
         // Buat folder
         if (!is_dir($folderPath) && !mkdir($folderPath, 0755, true)) {
@@ -99,7 +102,8 @@ try {
                 '{{AMP_URL}}',
                 '{{BRANDS_NAME}}',
                 '{{TITLE}}',
-                '{{DESCRIPTION}}'
+                '{{DESCRIPTION1}}',
+                '{{DESCRIPTION2}}'
             ],
             [
                 strtoupper($folderName),
@@ -107,7 +111,8 @@ try {
                 $ampURL,
                 strtolower($folderName),
                 $title,
-                $description
+                $desc1,
+                $desc2
             ],
             $templateContent
         );
@@ -152,7 +157,7 @@ try {
         throw new Exception("Gagal membuat file .htaccess");
     }
 
-    // Generate dan tulis sitemap.xml (URLs sudah memiliki trailing slash dari fungsi ensureTrailingSlash)
+    // Generate dan tulis sitemap.xml
     $sitemap = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
     $sitemap .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
     $sitemap .= '<!--' . "\n";
