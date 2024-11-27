@@ -128,8 +128,39 @@ try {
         $articleIndex = ($articleIndex + 1) % count($articles);
     }
 
-    // Generate .htaccess, sitemap.xml, and robots.txt (code remains the same)
-    // ... [previous .htaccess generation code] ...
+    $sitemap = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+    $sitemap .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+    
+    foreach ($successfulUrls as $url) {
+        $sitemap .= "<url>\n";
+        $sitemap .= "\t<loc>" . $url . "</loc>\n";
+        $sitemap .= "\t<lastmod>" . date('Y-m-d') . "</lastmod>\n";
+        $sitemap .= "\t<changefreq>weekly</changefreq>\n";
+        $sitemap .= "\t<priority>1.0</priority>\n";
+        $sitemap .= "</url>\n";
+    }
+    
+    $sitemap .= "</urlset>";
+
+    $sitemapPath = __DIR__ . '/sitemap.xml';
+    if (file_put_contents($sitemapPath, $sitemap) !== false) {
+        echo "<br>✅ Sitemap.xml berhasil dibuat di: " . $sitemapPath . "<br>";
+        chmod($sitemapPath, 0644);
+    } else {
+        throw new Exception("Gagal menulis sitemap.xml");
+    }
+
+    $robotsContent = "User-agent: *\n";
+    $robotsContent .= "Sitemap: " . ensureTrailingSlash("https://" . $currentDomain) . "sitemap.xml";
+
+    // Pastikan path robots.txt absolute dan tulis file
+    $robotsPath = __DIR__ . '/robots.txt';
+    if (file_put_contents($robotsPath, $robotsContent) !== false) {
+        echo "✅ Robots.txt berhasil dibuat di: " . $robotsPath . "<br>";
+        chmod($robotsPath, 0644);
+    } else {
+        throw new Exception("Gagal menulis robots.txt");
+    }
     
     echo "<br>Proses selesai.";
 
