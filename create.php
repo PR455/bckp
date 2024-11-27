@@ -24,18 +24,11 @@ $filename = $gas_txt;
 $templateFile = $template_php;
 $mainDir = "gas";
 $successfulUrls = [];
-$titlesFile = $title_txt;
 $descriptionsFile1 = $descriptions1_txt;
 $descriptionsFile2 = $descriptions2_txt;
 
-// Membaca title dan deskripsi
-$titles = [];
-
+// Membaca deskripsi dari dua file
 try {
-    // Baca file titles
-    $titleContent = getFileContent($titlesFile);
-    $titles = array_filter(array_map('trim', explode("\n", $titleContent)));
-    
     // Baca file descriptions1
     $descriptionContent1 = getFileContent($descriptionsFile1);
     $descriptions1 = array_filter(array_map('trim', explode("\n", $descriptionContent1)));
@@ -43,9 +36,9 @@ try {
     // Baca file descriptions2
     $descriptionContent2 = getFileContent($descriptionsFile2);
     $descriptions2 = array_filter(array_map('trim', explode("\n", $descriptionContent2)));
-    
-    if (empty($titles) || empty($descriptions1) || empty($descriptions2)) {
-        throw new Exception("File title atau deskripsi kosong");
+
+    if (empty($descriptions1) || empty($descriptions2)) {
+        throw new Exception("File deskripsi kosong");
     }
 
     // Baca template
@@ -67,7 +60,6 @@ try {
     $currentDomain = $_SERVER['HTTP_HOST'];
 
     // Loop melalui keyword dan deskripsi
-    $titleIndex = 0;
     $descriptionIndex1 = 0;
     $descriptionIndex2 = 0;
 
@@ -79,13 +71,11 @@ try {
         $folderURL = ensureTrailingSlash("https://$currentDomain/$folderName");
         $ampURL = ensureTrailingSlash("https://ampmasal.xyz/$folderName");
         
-        // Ambil title dan deskripsi
-        $title = isset($titles[$titleIndex]) ? $titles[$titleIndex] : $titles[0];
+        // Ambil deskripsi
         $desc1 = isset($descriptions1[$descriptionIndex1]) ? $descriptions1[$descriptionIndex1] : $descriptions1[0];
         $desc2 = isset($descriptions2[$descriptionIndex2]) ? $descriptions2[$descriptionIndex2] : $descriptions2[0];
 
         // Update indeks
-        $titleIndex = ($titleIndex + 1) % count($titles);
         $descriptionIndex1 = ($descriptionIndex1 + 1) % count($descriptions1);
         $descriptionIndex2 = ($descriptionIndex2 + 1) % count($descriptions2);
 
@@ -101,7 +91,6 @@ try {
                 '{{URL_PATH}}',
                 '{{AMP_URL}}',
                 '{{BRANDS_NAME}}',
-                '{{TITLE}}',
                 '{{DESCRIPTION1}}',
                 '{{DESCRIPTION2}}'
             ],
@@ -110,7 +99,6 @@ try {
                 $folderURL,
                 $ampURL,
                 strtolower($folderName),
-                $title,
                 $desc1,
                 $desc2
             ],
