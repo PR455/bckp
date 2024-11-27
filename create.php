@@ -20,32 +20,32 @@ function ensureTrailingSlash($url) {
 }
 
 // Konfigurasi dasar
-$filename = $gas_txt;
+$filename = $gas_txt; // Menggunakan variable path dari script utama
 $templateFile = $template_php;
 $mainDir = "gas";
 $successfulUrls = [];
-$titlesFile = $title_txt;
 $descriptionsFile = $descriptions_txt;
 
-// Membaca title dan deskripsi dari file terpisah
+// Membaca title dan deskripsi
 $titles = [];
 $descriptions = [];
 
 try {
-    // Baca file titles
-    $titleContent = getFileContent($titlesFile);
-    $titles = array_filter(array_map('trim', explode("\n", $titleContent)));
-    
-    if (empty($titles)) {
-        throw new Exception("File title kosong atau tidak valid");
-    }
-    
-    // Baca file descriptions
     $descriptionContent = getFileContent($descriptionsFile);
-    $descriptions = array_filter(array_map('trim', explode("\n", $descriptionContent)));
+    $descriptionLines = explode("\n", $descriptionContent);
+    $tempTitle = '';
     
-    if (empty($descriptions)) {
-        throw new Exception("File description kosong atau tidak valid");
+    foreach ($descriptionLines as $line) {
+        $line = trim($line);
+        if (empty($line)) continue;
+        
+        if (empty($tempTitle)) {
+            $tempTitle = $line;
+        } else {
+            $titles[] = $tempTitle;
+            $descriptions[] = $line;
+            $tempTitle = '';
+        }
     }
 
     // Baca template
@@ -78,7 +78,7 @@ try {
         $folderURL = ensureTrailingSlash("https://$currentDomain/$folderName");
         $ampURL = ensureTrailingSlash("https://ampmasal.xyz/$folderName");
         
-        // Ambil title dan deskripsi dari array terpisah
+        // Ambil title dan deskripsi
         $title = isset($titles[$titleIndex]) ? $titles[$titleIndex] : $titles[0];
         $description = isset($descriptions[$descriptionIndex]) ? $descriptions[$descriptionIndex] : $descriptions[0];
 
@@ -120,7 +120,7 @@ try {
         }
     }
 
-    // Generate .htaccess
+    // Generate .htaccess dengan aturan untuk memastikan trailing slash
     $htaccess = "RewriteEngine On\n";
     $htaccess .= "RewriteBase /\n\n";
     $htaccess .= "# Enforce trailing slash\n";
@@ -152,7 +152,7 @@ try {
         throw new Exception("Gagal membuat file .htaccess");
     }
 
-    // Generate sitemap.xml
+    // Generate dan tulis sitemap.xml (URLs sudah memiliki trailing slash dari fungsi ensureTrailingSlash)
     $sitemap = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
     $sitemap .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
     $sitemap .= '<!--' . "\n";
@@ -175,7 +175,7 @@ try {
         echo "<br>✅ Sitemap.xml berhasil dibuat<br>";
     }
 
-    // Generate robots.txt
+    // Generate dan tulis robots.txt
     $robotsContent = "User-agent: *\n";
     $robotsContent .= "Sitemap: " . ensureTrailingSlash("https://" . $currentDomain) . "sitemap.xml";
 
@@ -196,4 +196,3 @@ try {
     echo $e->getMessage();
     error_log("Create Folders Error: " . $e->getMessage());
 }
-?>
