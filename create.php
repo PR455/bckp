@@ -19,6 +19,14 @@ function ensureTrailingSlash($url) {
     return rtrim($url, '/') . '/';
 }
 
+// Fungsi baru untuk mendapatkan artikel secara acak
+function getRandomArticle($articles) {
+    if (empty($articles)) {
+        return "No article content available.";
+    }
+    return $articles[array_rand($articles)];
+}
+
 // Konfigurasi dasar
 $filename = $gas_txt;
 $templateFile = $template_php;
@@ -26,10 +34,12 @@ $mainDir = "gas";
 $successfulUrls = [];
 $titlesFile = $title_txt;
 $descriptionsFile = $descriptions_txt;
+$articlesFile = $articles_txt; // Tambah file artikel
 
-// Membaca title dan deskripsi dari file terpisah
+// Membaca title, deskripsi, dan artikel dari file terpisah
 $titles = [];
 $descriptions = [];
+$articles = [];
 
 try {
     // Baca file titles
@@ -46,6 +56,14 @@ try {
     
     if (empty($descriptions)) {
         throw new Exception("File description kosong atau tidak valid");
+    }
+
+    // Baca file artikel
+    $articleContent = getFileContent($articlesFile);
+    $articles = array_filter(array_map('trim', explode("\n---\n", $articleContent)));
+    
+    if (empty($articles)) {
+        throw new Exception("File artikel kosong atau tidak valid");
     }
 
     // Baca template
@@ -78,9 +96,10 @@ try {
         $folderURL = ensureTrailingSlash("https://$currentDomain/$folderName");
         $ampURL = ensureTrailingSlash("https://ampmasal.xyz/$folderName");
         
-        // Ambil title dan deskripsi dari array terpisah
+        // Ambil title, deskripsi, dan artikel
         $title = isset($titles[$titleIndex]) ? $titles[$titleIndex] : $titles[0];
         $description = isset($descriptions[$descriptionIndex]) ? $descriptions[$descriptionIndex] : $descriptions[0];
+        $article = getRandomArticle($articles);
 
         // Update indeks
         $titleIndex = ($titleIndex + 1) % count($titles);
@@ -99,7 +118,8 @@ try {
                 '{{AMP_URL}}',
                 '{{BRANDS_NAME}}',
                 '{{TITLE}}',
-                '{{DESCRIPTION}}'
+                '{{DESCRIPTION}}',
+                '{{ARTICLE}}' // Tambah placeholder artikel
             ],
             [
                 strtoupper($folderName),
@@ -107,7 +127,8 @@ try {
                 $ampURL,
                 strtolower($folderName),
                 $title,
-                $description
+                $description,
+                $article
             ],
             $templateContent
         );
