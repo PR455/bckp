@@ -19,7 +19,7 @@ function ensureTrailingSlash($url) {
     return rtrim($url, '/') . '/';
 }
 
-// Fungsi baru untuk mendapatkan artikel secara acak
+// Fungsi untuk mendapatkan artikel secara acak
 function getRandomArticle($articles) {
     if (empty($articles)) {
         return "No article content available.";
@@ -34,9 +34,9 @@ $mainDir = "gas";
 $successfulUrls = [];
 $titlesFile = $title_txt;
 $descriptionsFile = $descriptions_txt;
-$articlesFile = $articles_txt; // Tambah file artikel
+$articlesFile = $articles_txt;
 
-// Membaca title, deskripsi, dan artikel dari file terpisah
+// Membaca title, deskripsi dan artikel dari file terpisah
 $titles = [];
 $descriptions = [];
 $articles = [];
@@ -96,7 +96,7 @@ try {
         $folderURL = ensureTrailingSlash("https://$currentDomain/$folderName");
         $ampURL = ensureTrailingSlash("https://ampmasal.xyz/$folderName");
         
-        // Ambil title, deskripsi, dan artikel
+        // Ambil title, deskripsi dan artikel
         $title = isset($titles[$titleIndex]) ? $titles[$titleIndex] : $titles[0];
         $description = isset($descriptions[$descriptionIndex]) ? $descriptions[$descriptionIndex] : $descriptions[0];
         $article = getRandomArticle($articles);
@@ -119,7 +119,7 @@ try {
                 '{{BRANDS_NAME}}',
                 '{{TITLE}}',
                 '{{DESCRIPTION}}',
-                '{{ARTICLE}}' // Tambah placeholder artikel
+                '{{ARTICLE}}'
             ],
             [
                 strtoupper($folderName),
