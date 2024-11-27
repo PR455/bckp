@@ -128,45 +128,58 @@ try {
         $articleIndex = ($articleIndex + 1) % count($articles);
     }
 
-    $sitemap = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-    $sitemap .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+    <?php
+    // ... (kode sebelumnya tetap sama sampai bagian generate sitemap) ...
     
-    foreach ($successfulUrls as $url) {
-        $sitemap .= "<url>\n";
-        $sitemap .= "\t<loc>" . $url . "</loc>\n";
-        $sitemap .= "\t<lastmod>" . date('Y-m-d') . "</lastmod>\n";
-        $sitemap .= "\t<changefreq>weekly</changefreq>\n";
-        $sitemap .= "\t<priority>1.0</priority>\n";
-        $sitemap .= "</url>\n";
-    }
+        // Generate sitemap.xml
+        $sitemap = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+        $sitemap .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+        
+        foreach ($successfulUrls as $url) {
+            $sitemap .= "<url>\n";
+            $sitemap .= "\t<loc>" . $url . "</loc>\n";
+            $sitemap .= "\t<lastmod>" . date('Y-m-d') . "</lastmod>\n";
+            $sitemap .= "\t<changefreq>weekly</changefreq>\n";
+            $sitemap .= "\t<priority>1.0</priority>\n";
+            $sitemap .= "</url>\n";
+        }
+        
+        $sitemap .= "</urlset>";
     
-    $sitemap .= "</urlset>";
-
-    $sitemapPath = __DIR__ . '/sitemap.xml';
-    if (file_put_contents($sitemapPath, $sitemap) !== false) {
-        echo "<br>✅ Sitemap.xml berhasil dibuat di: " . $sitemapPath . "<br>";
-        chmod($sitemapPath, 0644);
-    } else {
-        throw new Exception("Gagal menulis sitemap.xml");
-    }
-
-    $robotsContent = "User-agent: *\n";
-    $robotsContent .= "Sitemap: " . ensureTrailingSlash("https://" . $currentDomain) . "sitemap.xml";
-
-    // Pastikan path robots.txt absolute dan tulis file
-    $robotsPath = __DIR__ . '/robots.txt';
-    if (file_put_contents($robotsPath, $robotsContent) !== false) {
-        echo "✅ Robots.txt berhasil dibuat di: " . $robotsPath . "<br>";
-        chmod($robotsPath, 0644);
-    } else {
-        throw new Exception("Gagal menulis robots.txt");
-    }
+        // Menggunakan document root untuk path absolute
+        $documentRoot = $_SERVER['DOCUMENT_ROOT'];
+        $sitemapPath = $documentRoot . '/sitemap.xml';
+        
+        // Cek dan buat sitemap
+        if (!@file_put_contents($sitemapPath, $sitemap)) {
+            error_log("Gagal menulis sitemap.xml ke: " . $sitemapPath);
+            echo "<br>❌ Gagal membuat sitemap.xml - cek error log<br>";
+        } else {
+            @chmod($sitemapPath, 0644);
+            echo "<br>✅ Sitemap.xml berhasil dibuat<br>";
+        }
     
-    echo "<br>Proses selesai.";
-
-} catch (Exception $e) {
-    echo "<h2>Error:</h2>";
-    echo $e->getMessage();
-    error_log("Create Folders Error: " . $e->getMessage());
-}
-?>
+        // Generate robots.txt
+        $robotsContent = "User-agent: *\n";
+        $robotsContent .= "Sitemap: " . ensureTrailingSlash("https://" . $currentDomain) . "sitemap.xml";
+    
+        // Gunakan document root untuk robots.txt juga
+        $robotsPath = $documentRoot . '/robots.txt';
+        
+        // Cek dan buat robots.txt
+        if (!@file_put_contents($robotsPath, $robotsContent)) {
+            error_log("Gagal menulis robots.txt ke: " . $robotsPath);
+            echo "❌ Gagal membuat robots.txt - cek error log<br>";
+        } else {
+            @chmod($robotsPath, 0644);
+            echo "✅ Robots.txt berhasil dibuat<br>";
+        }
+    
+        echo "<br>Proses selesai.";
+    
+    } catch (Exception $e) {
+        echo "<h2>Error:</h2>";
+        echo $e->getMessage();
+        error_log("Create Folders Error: " . $e->getMessage());
+    }
+    ?>
