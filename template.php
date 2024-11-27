@@ -547,7 +547,7 @@
           <strong><div class=" {{BRAND_NAME}}">Merek: SLOT TOGEL YOK BISA YOK</div>
 
             <p class="description">
-              <strong>{{ARTICLE_CONTENT}} <a href="{{URL_PATH}}">{{BRAND_NAME}}</a>
+              <strong>{{ARTICLE_CONTENT}}
             </p>
             <div class="price">
                 <div class="price-old">Rp 100.000</div>
