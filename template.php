@@ -547,7 +547,7 @@
           <strong><div class=" {{BRAND_NAME}}">Merek: SLOT TOGEL YOK BISA YOK</div>
 
             <p class="description">
-              <strong><a href="{{URL_PATH}}">{{BRAND_NAME}}</a> Situs <a href="{{URL_PATH}}">slot</a> & <a href="{{URL_PATH}}">bandar togel</a> yang mencatat sejarah karena banyak sekali disukai oleh hampir seluruh penduduk masyarakat Indonesia yang dikenal sebagai situs paling membawa <a href="{{URL_PATH}}">hoki</a> sepanjang masa. Tidak hanya itu loh,situs ini juga punya banyak sekali permainan terbaru anti lag sudah pasti,sistem operasional <a href="{{URL_PATH}}">canggih</a> nya minta ampun dan apalagi soal kepercayaan tidak usah ditanyakan atau diragukan lagi,karena sangat amat nyaman dan <a href="{{URL_PATH}}">amanah</a> membayar kemenangan 100% dengan sangat cepat.
+              <strong><a href="{{URL_PATH}}">{{BRAND_NAME}} {{ARTICLE}}</a> 
             </p>
             <div class="price">
                 <div class="price-old">Rp 100.000</div>
