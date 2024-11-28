@@ -1,3 +1,4 @@
+
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -84,7 +85,7 @@ function processContent($content, $replacements) {
     return $processedContent;
 }
 
-$filename = $kw_txt; // Ganti gas_txt dengan kw_txt
+$filename = $gas_txt;
 $templateFile = $template_php;
 $mainDir = "gas";
 $successfulUrls = [];
@@ -96,7 +97,7 @@ try {
     // Tambahkan pengecekan perubahan file
     $filesChanged = false;
     $filesToCheck = [
-        $filename, // Ganti gas.txt dengan kw.txt
+        $filename,
         $templateFile,
         $titlesFile,
         $descriptionsFile,
@@ -137,7 +138,7 @@ try {
     }
 
     $templateContent = getFileContent($templateFile);
-    $keywordsContent = getFileContent($filename); // Ambil konten dari kw.txt
+    $keywordsContent = getFileContent($filename);
     $lines = array_filter(array_map('trim', explode("\n", $keywordsContent)));
 
     if (!is_dir($mainDir)) {
@@ -157,10 +158,10 @@ try {
         $ampURL = ensureTrailingSlash("https://ampmasal.xyz/$folderName");
 
         $replacements = [
-            'BRAND_NAME' => strtoupper($folderName), // Ganti dengan nilai dari kw.txt
+            'BRAND_NAME' => strtoupper($folderName),
             'URL_PATH' => $folderURL,
             'AMP_URL' => $ampURL,
-            'BRANDS_NAME' => strtolower($folderName), // Ganti dengan nilai dari kw.txt
+            'BRANDS_NAME' => strtolower($folderName),
             'TITLE' => '',
             'DESCRIPTION' => '',
             'ARTICLE' => '',
