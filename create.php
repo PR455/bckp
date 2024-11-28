@@ -4,22 +4,13 @@ ini_set('display_errors', 1);
 
 // Deklarasi jalur file
 $baseDir = __DIR__; // Semua file berada dalam direktori yang sama dengan skrip ini
-$pk_txt = $baseDir . '/pk.txt'; // File pk.txt
+$pk_txt = $baseDir . '/pk.txt';
 $templateFile = $baseDir . '/template.php';
 $titlesFile = $baseDir . '/title.txt';
 $descriptionsFile = $baseDir . '/descriptions.txt';
 $artikelFile = $baseDir . '/artikel.txt';
 
-$mainDir = $baseDir . "/gas"; // Direktori output
-$successfulUrls = [];
-
 try {
-    // Debugging jalur file
-    if (!file_exists($pk_txt)) {
-        echo "Debug: Jalur file pk.txt: $pk_txt<br>";
-        throw new Exception("File '$pk_txt' tidak ditemukan atau tidak valid.");
-    }
-    
     // Validasi keberadaan semua file
     $filesToCheck = [
         $pk_txt,
@@ -35,17 +26,10 @@ try {
         }
     }
 
-    // Pengecekan perubahan file
-    $filesChanged = false;
+    // Debugging: Tampilkan semua jalur file yang ditemukan
+    echo "Semua file ditemukan di jalur:<br>";
     foreach ($filesToCheck as $file) {
-        if (checkFileChanges($file)) {
-            $filesChanged = true;
-            break;
-        }
-    }
-
-    if ($filesChanged) {
-        clearFileCache();
+        echo "$file<br>";
     }
 
     // Proses lainnya tetap sama...
@@ -55,7 +39,6 @@ try {
     echo $e->getMessage();
     error_log("Error: " . $e->getMessage());
 }
-
 // Fungsi asli - tidak diubah
 function getFileContent($filePath) {
     if (!file_exists($filePath)) {
