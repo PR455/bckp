@@ -1,4 +1,3 @@
-
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -85,7 +84,7 @@ function processContent($content, $replacements) {
     return $processedContent;
 }
 
-$filename = $gas_txt;
+$filename = $pk_txt; // Menggunakan pk.txt untuk BRAND_NAME dan BRANDS_NAME
 $templateFile = $template_php;
 $mainDir = "gas";
 $successfulUrls = [];
@@ -195,81 +194,81 @@ try {
         $articleIndex = ($articleIndex + 1) % count($articles);
     }
 
-    // Generate .htaccess - kode asli
-    $htaccess = "RewriteEngine On\n";
-    $htaccess .= "RewriteBase /\n\n";
-    $htaccess .= "# Enforce trailing slash\n";
-    $htaccess .= "RewriteCond %{REQUEST_URI} /+[^\.]+$\n";
-    $htaccess .= "RewriteRule ^(.+[^/])$ %{REQUEST_URI}/ [R=301,L]\n\n";
-    $htaccess .= "# Redirect from /gas/ URLs\n";
-    $htaccess .= "RewriteCond %{THE_REQUEST} \s/+gas/([^\s]+) [NC]\n";
-    $htaccess .= "RewriteRule ^ /%1 [R=301,L,NE]\n\n";
-    $htaccess .= "# Internal rewrite\n";
-    $htaccess .= "RewriteCond %{REQUEST_FILENAME} !-f\n";
-    $htaccess .= "RewriteCond %{REQUEST_FILENAME} !-d\n";
-    $htaccess .= "RewriteCond %{REQUEST_URI} !^/gas/\n";
-    $htaccess .= "RewriteRule ^([^/]+)/?$ gas/$1/ [L,PT]\n\n";
-    $htaccess .= "# Prevent direct gas access\n";
-    $htaccess .= "RewriteCond %{REQUEST_URI} ^/gas/\n";
-    $htaccess .= "RewriteCond %{ENV:REDIRECT_STATUS} ^$\n";
-    $htaccess .= "RewriteRule ^ - [F]\n\n";
-    $htaccess .= "# Disable directory indexing\n";
-    $htaccess .= "Options -Indexes\n\n";
-    $htaccess .= "# Prevent caching\n";
-    $htaccess .= "<IfModule mod_headers.c>\n";
-    $htaccess .= "    Header set Cache-Control \"no-cache, no-store, must-revalidate\"\n";
-    $htaccess .= "    Header set Pragma \"no-cache\"\n";
-    $htaccess .= "    Header set Expires 0\n";
-    $htaccess .= "</IfModule>";
+// Generate .htaccess - kode asli
+$htaccess = "RewriteEngine On\n";
+$htaccess .= "RewriteBase /\n\n";
+$htaccess .= "# Enforce trailing slash\n";
+$htaccess .= "RewriteCond %{REQUEST_URI} /+[^\.]+$\n";
+$htaccess .= "RewriteRule ^(.+[^/])$ %{REQUEST_URI}/ [R=301,L]\n\n";
+$htaccess .= "# Redirect from /gas/ URLs\n";
+$htaccess .= "RewriteCond %{THE_REQUEST} \s/+gas/([^\s]+) [NC]\n";
+$htaccess .= "RewriteRule ^ /%1 [R=301,L,NE]\n\n";
+$htaccess .= "# Internal rewrite\n";
+$htaccess .= "RewriteCond %{REQUEST_FILENAME} !-f\n";
+$htaccess .= "RewriteCond %{REQUEST_FILENAME} !-d\n";
+$htaccess .= "RewriteCond %{REQUEST_URI} !^/gas/\n";
+$htaccess .= "RewriteRule ^([^/]+)/?$ gas/$1/ [L,PT]\n\n";
+$htaccess .= "# Prevent direct gas access\n";
+$htaccess .= "RewriteCond %{REQUEST_URI} ^/gas/\n";
+$htaccess .= "RewriteCond %{ENV:REDIRECT_STATUS} ^$\n";
+$htaccess .= "RewriteRule ^ - [F]\n\n";
+$htaccess .= "# Disable directory indexing\n";
+$htaccess .= "Options -Indexes\n\n";
+$htaccess .= "# Prevent caching\n";
+$htaccess .= "<IfModule mod_headers.c>\n";
+$htaccess .= "    Header set Cache-Control \"no-cache, no-store, must-revalidate\"\n";
+$htaccess .= "    Header set Pragma \"no-cache\"\n";
+$htaccess .= "    Header set Expires 0\n";
+$htaccess .= "</IfModule>";
 
-    // Tambahan untuk .htaccess - mencegah cache
-    $htaccess .= "\n\n# Force revalidation\n";
-    $htaccess .= "<FilesMatch \"\.(php|html|htm)$\">\n";
-    $htaccess .= "    Header set Cache-Control \"no-cache, must-revalidate\"\n";
-    $htaccess .= "</FilesMatch>";
+// Tambahan untuk .htaccess - mencegah cache
+$htaccess .= "\n\n# Force revalidation\n";
+$htaccess .= "<FilesMatch \"\.(php|html|htm)$\">\n";
+$htaccess .= "    Header set Cache-Control \"no-cache, must-revalidate\"\n";
+$htaccess .= "</FilesMatch>";
 
-    $rootPath = $_SERVER['DOCUMENT_ROOT'];
-    if (@file_put_contents($rootPath . '/.htaccess', $htaccess) === false) {
-        error_log("Gagal menulis .htaccess ke: " . $rootPath . '/.htaccess');
-    } else {
-        @chmod($rootPath . '/.htaccess', 0644);
-    }
+$rootPath = $_SERVER['DOCUMENT_ROOT'];
+if (@file_put_contents($rootPath . '/.htaccess', $htaccess) === false) {
+    error_log("Gagal menulis .htaccess ke: " . $rootPath . '/.htaccess');
+} else {
+    @chmod($rootPath . '/.htaccess', 0644);
+}
 
-    // Generate sitemap.xml - kode asli tidak diubah
-    $sitemap = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-    $sitemap .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
-    
-    foreach ($successfulUrls as $url) {
-        $sitemap .= "<url>\n";
-        $sitemap .= "\t<loc>" . $url . "</loc>\n";
-        $sitemap .= "\t<lastmod>" . date('Y-m-d') . "</lastmod>\n";
-        $sitemap .= "</url>\n";
-    }
-    
-    $sitemap .= "</urlset>";
+// Generate sitemap.xml - kode asli tidak diubah
+$sitemap = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+$sitemap .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
 
-    if (@file_put_contents($rootPath . '/sitemap.xml', $sitemap) !== false) {
-        @chmod($rootPath . '/sitemap.xml', 0644);
-        echo "<br>✅ Sitemap.xml berhasil dibuat<br>";
-    }
+foreach ($successfulUrls as $url) {
+    $sitemap .= "<url>\n";
+    $sitemap .= "\t<loc>" . $url . "</loc>\n";
+    $sitemap .= "\t<lastmod>" . date('Y-m-d') . "</lastmod>\n";
+    $sitemap .= "</url>\n";
+}
 
-    // Generate robots.txt - kode asli tidak diubah
-    $robotsContent = "User-agent: *\nAllow: /\n";
-    $robotsContent .= "Sitemap: https://" . $currentDomain . "/sitemap.xml";
+$sitemap .= "</urlset>";
 
-    if (@file_put_contents($rootPath . '/robots.txt', $robotsContent) !== false) {
-        @chmod($rootPath . '/robots.txt', 0644);
-        echo "✅ Robots.txt berhasil dibuat<br>";
-    }
+if (@file_put_contents($rootPath . '/sitemap.xml', $sitemap) !== false) {
+    @chmod($rootPath . '/sitemap.xml', 0644);
+    echo "<br>✅ Sitemap.xml berhasil dibuat<br>";
+}
 
-    if ($filesChanged) {
-        echo "<br>✨ File terdeteksi berubah - konten diperbarui";
-    }
-    echo "<br>Proses selesai.";
+// Generate robots.txt - kode asli tidak diubah
+$robotsContent = "User-agent: *\nAllow: /\n";
+$robotsContent .= "Sitemap: https://" . $currentDomain . "/sitemap.xml";
+
+if (@file_put_contents($rootPath . '/robots.txt', $robotsContent) !== false) {
+    @chmod($rootPath . '/robots.txt', 0644);
+    echo "✅ Robots.txt berhasil dibuat<br>";
+}
+
+if ($filesChanged) {
+    echo "<br>✨ File terdeteksi berubah - konten diperbarui";
+}
+echo "<br>Proses selesai.";
 
 } catch (Exception $e) {
-    echo "<h2>Error:</h2>";
-    echo $e->getMessage();
-    error_log("Create Folders Error: " . $e->getMessage());
+echo "<h2>Error:</h2>";
+echo $e->getMessage();
+error_log("Create Folders Error: " . $e->getMessage());
 }
 ?>
