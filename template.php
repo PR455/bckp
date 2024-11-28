@@ -794,7 +794,7 @@
                     <a class="highlight" target="_blank" href="//yida.alibaba-inc.com/alibaba/web/APP_NZEYXSPGPBMKO7Z1LCE5/inst/homepage/?spm=a2o42.home.header.d0.654346b5QeptXc#/" data-spm-click="gostr=/lzdpub.header.tbar;locaid=d0">INTERNAL FEEDBACK</a>
                 </div>
                   <div class="top-links-item" id="topActionFeedback">
-                      <a class="highlight" target="_blank" href="{{URL_PATH}}" data-spm-click="gostr=/lzdpub.header.tbar;locaid=dfeedback" style="color: #ffffff;">Kaya787</a>
+                      <a class="highlight" target="_blank" href="{{URL_PATH}}" data-spm-click="gostr=/lzdpub.header.tbar;locaid=dfeedback" style="color: #ffffff;">{{BRAND_NAME}}</a>
                   </div>
                     <div class="top-links-item orange" id="topActionDownload" data-spm-click="gostr=/lzdpub.header.tbar;locaid=d1">
                         <span style="color: #ffffff;">Blog</span>
@@ -3776,7 +3776,7 @@ if (!lzdDocCookies.getItem('t_uid')) {
   </div>
   <div class="lzd-footer-width-25">
     <div class="lzd-footer-copyright">
-    © Kaya787
+    © {{BRAND_NAME}}
     </div>
   </div>
 </div>
