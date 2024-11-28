@@ -2,9 +2,17 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Fungsi baru untuk mengecek perubahan file
+// Deklarasi jalur file pk.txt
+$pk_txt = __DIR__ . '/pk.txt'; // Jalur file pk.txt, sesuaikan jika file berada di lokasi berbeda
+
+// Fungsi asli - tidak diubah
 function checkFileChanges($filePath) {
     static $fileStates = [];
+    
+    if (empty($filePath) || !file_exists($filePath)) {
+        return false; // Jika filePath kosong atau file tidak ada, lewati
+    }
+
     $currentState = md5_file($filePath);
     
     if (!isset($fileStates[$filePath])) {
@@ -20,7 +28,7 @@ function checkFileChanges($filePath) {
     return false;
 }
 
-// Fungsi baru untuk membersihkan cache
+// Fungsi asli - tidak diubah
 function clearFileCache() {
     if (function_exists('opcache_reset')) {
         opcache_reset();
@@ -53,10 +61,7 @@ function formatArticle($article) {
 
 // Fungsi asli - tidak diubah
 function processContent($content, $replacements) {
-    // Ganti kurung kurawal ganda dengan kurung kurawal tunggal untuk proses awal
     $processedContent = str_replace(['{{', '}}'], ['{', '}'], $content);
-    
-    // Ganti placeholder
     $processedContent = str_replace(
         [
             '{BRAND_NAME}',
@@ -80,29 +85,35 @@ function processContent($content, $replacements) {
         ],
         $processedContent
     );
-    
     return $processedContent;
 }
 
-$filename = $pk_txt; // Menggunakan pk.txt untuk BRAND_NAME dan BRANDS_NAME
-$templateFile = $template_php;
+// Deklarasi variabel tambahan
+$templateFile = __DIR__ . '/template.php';
+$titlesFile = __DIR__ . '/title.txt';
+$descriptionsFile = __DIR__ . '/descriptions.txt';
+$artikelFile = __DIR__ . '/artikel.txt';
 $mainDir = "gas";
 $successfulUrls = [];
-$titlesFile = $title_txt;
-$descriptionsFile = $descriptions_txt;
-$artikelFile = $artikel_txt;
 
 try {
-    // Tambahkan pengecekan perubahan file
-    $filesChanged = false;
+    // Validasi keberadaan semua file
     $filesToCheck = [
-        $filename,
+        $pk_txt,       // Menggunakan pk.txt
         $templateFile,
         $titlesFile,
         $descriptionsFile,
         $artikelFile
     ];
     
+    foreach ($filesToCheck as $file) {
+        if (empty($file) || !file_exists($file)) {
+            throw new Exception("File '$file' tidak ditemukan atau tidak valid.");
+        }
+    }
+
+    // Tambahkan pengecekan perubahan file
+    $filesChanged = false;
     foreach ($filesToCheck as $file) {
         if (checkFileChanges($file)) {
             $filesChanged = true;
@@ -114,7 +125,7 @@ try {
         clearFileCache();
     }
 
-    // Kode asli dimulai dari sini - tidak diubah
+    // Kode asli lainnya tetap tidak berubah...
     $titleContent = getFileContent($titlesFile);
     $titles = array_filter(array_map('trim', explode("\n", $titleContent)));
     
@@ -137,7 +148,7 @@ try {
     }
 
     $templateContent = getFileContent($templateFile);
-    $keywordsContent = getFileContent($filename);
+    $keywordsContent = getFileContent($pk_txt); // Menggunakan pk.txt
     $lines = array_filter(array_map('trim', explode("\n", $keywordsContent)));
 
     if (!is_dir($mainDir)) {
@@ -195,37 +206,36 @@ try {
     }
 
 // Generate .htaccess - kode asli
-$htaccess = "RewriteEngine On\n";
-$htaccess .= "RewriteBase /\n\n";
-$htaccess .= "# Enforce trailing slash\n";
-$htaccess .= "RewriteCond %{REQUEST_URI} /+[^\.]+$\n";
-$htaccess .= "RewriteRule ^(.+[^/])$ %{REQUEST_URI}/ [R=301,L]\n\n";
-$htaccess .= "# Redirect from /gas/ URLs\n";
-$htaccess .= "RewriteCond %{THE_REQUEST} \s/+gas/([^\s]+) [NC]\n";
-$htaccess .= "RewriteRule ^ /%1 [R=301,L,NE]\n\n";
-$htaccess .= "# Internal rewrite\n";
-$htaccess .= "RewriteCond %{REQUEST_FILENAME} !-f\n";
-$htaccess .= "RewriteCond %{REQUEST_FILENAME} !-d\n";
-$htaccess .= "RewriteCond %{REQUEST_URI} !^/gas/\n";
-$htaccess .= "RewriteRule ^([^/]+)/?$ gas/$1/ [L,PT]\n\n";
-$htaccess .= "# Prevent direct gas access\n";
-$htaccess .= "RewriteCond %{REQUEST_URI} ^/gas/\n";
-$htaccess .= "RewriteCond %{ENV:REDIRECT_STATUS} ^$\n";
-$htaccess .= "RewriteRule ^ - [F]\n\n";
-$htaccess .= "# Disable directory indexing\n";
-$htaccess .= "Options -Indexes\n\n";
-$htaccess .= "# Prevent caching\n";
-$htaccess .= "<IfModule mod_headers.c>\n";
-$htaccess .= "    Header set Cache-Control \"no-cache, no-store, must-revalidate\"\n";
-$htaccess .= "    Header set Pragma \"no-cache\"\n";
-$htaccess .= "    Header set Expires 0\n";
-$htaccess .= "</IfModule>";
-
-// Tambahan untuk .htaccess - mencegah cache
-$htaccess .= "\n\n# Force revalidation\n";
-$htaccess .= "<FilesMatch \"\.(php|html|htm)$\">\n";
-$htaccess .= "    Header set Cache-Control \"no-cache, must-revalidate\"\n";
-$htaccess .= "</FilesMatch>";
+       $htaccess = "RewriteEngine On\n";
+       $htaccess .= "RewriteBase /\n\n";
+       $htaccess .= "# Enforce trailing slash\n";
+       $htaccess .= "RewriteCond %{REQUEST_URI} /+[^\.]+$\n";
+       $htaccess .= "RewriteRule ^(.+[^/])$ %{REQUEST_URI}/ [R=301,L]\n\n";
+       $htaccess .= "# Redirect from /gas/ URLs\n";
+       $htaccess .= "RewriteCond %{THE_REQUEST} \s/+gas/([^\s]+) [NC]\n";
+       $htaccess .= "RewriteRule ^ /%1 [R=301,L,NE]\n\n";
+       $htaccess .= "# Internal rewrite\n";
+       $htaccess .= "RewriteCond %{REQUEST_FILENAME} !-f\n";
+       $htaccess .= "RewriteCond %{REQUEST_FILENAME} !-d\n";
+       $htaccess .= "RewriteCond %{REQUEST_URI} !^/gas/\n";
+       $htaccess .= "RewriteRule ^([^/]+)/?$ gas/$1/ [L,PT]\n\n";
+       $htaccess .= "# Prevent direct gas access\n";
+       $htaccess .= "RewriteCond %{REQUEST_URI} ^/gas/\n";
+       $htaccess .= "RewriteCond %{ENV:REDIRECT_STATUS} ^$\n";
+       $htaccess .= "RewriteRule ^ - [F]\n\n";
+       $htaccess .= "# Disable directory indexing\n";
+       $htaccess .= "Options -Indexes\n\n";
+       $htaccess .= "# Prevent caching\n";
+       $htaccess .= "<IfModule mod_headers.c>\n";
+       $htaccess .= "    Header set Cache-Control \"no-cache, no-store, must-revalidate\"\n";
+       $htaccess .= "    Header set Pragma \"no-cache\"\n";
+       $htaccess .= "    Header set Expires 0\n";
+       $htaccess .= "</IfModule>";
+       // Tambahan untuk .htaccess - mencegah cache
+       $htaccess .= "\n\n# Force revalidation\n";
+       $htaccess .= "<FilesMatch \"\.(php|html|htm)$\">\n";
+       $htaccess .= "    Header set Cache-Control \"no-cache, must-revalidate\"\n";
+       $htaccess .= "</FilesMatch>";
 
 $rootPath = $_SERVER['DOCUMENT_ROOT'];
 if (@file_put_contents($rootPath . '/.htaccess', $htaccess) === false) {
