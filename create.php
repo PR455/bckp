@@ -51,14 +51,12 @@ function formatArticle($article) {
     return '<p>' . $article . '</p>';
 }
 
-// Fungsi asli - tidak diubah
-function processContent($content, $replacements) {
-    // Fungsi baru untuk memformat nama brand
-    function formatBrandName($brandName) {
-        // Ganti tanda hubung dengan spasi
-        return str_replace('-', ' ', $brandName);
-    }
+function formatBrandName($brandName) {
+    // Ganti tanda hubung dengan spasi
+    return str_replace('-', ' ', $brandName);
+}
 
+function processContent($content, $replacements) {
     // Ganti kurung kurawal ganda dengan kurung kurawal tunggal untuk proses awal
     $processedContent = str_replace(['{{', '}}'], ['{', '}'], $content);
     
@@ -68,6 +66,7 @@ function processContent($content, $replacements) {
     // Ganti placeholder
     $processedContent = str_replace(
         [
+
             '{BRAND_NAME}',
             '{URL_PATH}',
             '{AMP_URL}',
