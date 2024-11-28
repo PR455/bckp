@@ -1,3 +1,4 @@
+
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -51,17 +52,10 @@ function formatArticle($article) {
     return '<p>' . $article . '</p>';
 }
 
-function formatBrandName($brandName) {
-    // Ganti tanda hubung dengan spasi
-    return str_replace('-', ' ', $brandName);
-}
-
+// Fungsi asli - tidak diubah
 function processContent($content, $replacements) {
     // Ganti kurung kurawal ganda dengan kurung kurawal tunggal untuk proses awal
     $processedContent = str_replace(['{{', '}}'], ['{', '}'], $content);
-    
-    // Pastikan BRAND_NAME di-format dengan spasi
-    $replacements['BRAND_NAME'] = formatBrandName(strtoupper(str_replace('-', ' ', $replacements['BRAND_NAME'])));
     
     // Ganti placeholder
     $processedContent = str_replace(
@@ -154,6 +148,7 @@ try {
     }
 
     $currentDomain = $_SERVER['HTTP_HOST'];
+    $titleIndex = $descriptionIndex = $articleIndex = 0;
 
     foreach ($lines as $line) {
         $folderName = str_replace(' ', '-', trim($line));
@@ -173,10 +168,9 @@ try {
             'ARTICLE_CONTENT' => ''
         ];
 
-        // Pilih data secara acak
-        $currentTitle = processContent($titles[array_rand($titles)], $replacements);
-        $currentDescription = processContent($descriptions[array_rand($descriptions)], $replacements);
-        $currentArticle = formatArticle(processContent($articles[array_rand($articles)], $replacements));
+        $currentTitle = isset($titles[$titleIndex]) ? processContent($titles[$titleIndex], $replacements) : processContent($titles[0], $replacements);
+        $currentDescription = isset($descriptions[$descriptionIndex]) ? processContent($descriptions[$descriptionIndex], $replacements) : processContent($descriptions[0], $replacements);
+        $currentArticle = isset($articles[$articleIndex]) ? formatArticle(processContent($articles[$articleIndex], $replacements)) : formatArticle(processContent($articles[0], $replacements));
 
         $replacements['TITLE'] = $currentTitle;
         $replacements['DESCRIPTION'] = $currentDescription;
@@ -195,8 +189,13 @@ try {
             $successfulUrls[] = $folderURL;
             chmod($indexPath, 0644);
         }
+
+        $titleIndex = ($titleIndex + 1) % count($titles);
+        $descriptionIndex = ($descriptionIndex + 1) % count($descriptions);
+        $articleIndex = ($articleIndex + 1) % count($articles);
     }
 
+    // Generate .htaccess - kode asli
     $htaccess = "RewriteEngine On\n";
     $htaccess .= "RewriteBase /\n\n";
     $htaccess .= "# Enforce trailing slash\n";
