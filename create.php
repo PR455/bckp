@@ -13,35 +13,47 @@ $artikelFile = $baseDir . '/artikel.txt';
 $mainDir = $baseDir . "/gas"; // Direktori output
 $successfulUrls = [];
 
-// Fungsi asli - tidak diubah
-function checkFileChanges($filePath) {
-    static $fileStates = [];
+try {
+    // Debugging jalur file
+    if (!file_exists($pk_txt)) {
+        echo "Debug: Jalur file pk.txt: $pk_txt<br>";
+        throw new Exception("File '$pk_txt' tidak ditemukan atau tidak valid.");
+    }
     
-    if (empty($filePath) || !file_exists($filePath)) {
-        return false; // Jika filePath kosong atau file tidak ada, lewati
+    // Validasi keberadaan semua file
+    $filesToCheck = [
+        $pk_txt,
+        $templateFile,
+        $titlesFile,
+        $descriptionsFile,
+        $artikelFile
+    ];
+    
+    foreach ($filesToCheck as $file) {
+        if (!file_exists($file)) {
+            throw new Exception("File '$file' tidak ditemukan atau tidak valid.");
+        }
     }
 
-    $currentState = md5_file($filePath);
-    
-    if (!isset($fileStates[$filePath])) {
-        $fileStates[$filePath] = $currentState;
-        return true;
+    // Pengecekan perubahan file
+    $filesChanged = false;
+    foreach ($filesToCheck as $file) {
+        if (checkFileChanges($file)) {
+            $filesChanged = true;
+            break;
+        }
     }
-    
-    if ($fileStates[$filePath] !== $currentState) {
-        $fileStates[$filePath] = $currentState;
-        return true;
-    }
-    
-    return false;
-}
 
-// Fungsi asli - tidak diubah
-function clearFileCache() {
-    if (function_exists('opcache_reset')) {
-        opcache_reset();
+    if ($filesChanged) {
+        clearFileCache();
     }
-    clearstatcache(true);
+
+    // Proses lainnya tetap sama...
+    echo "<br>✨ Skrip selesai dijalankan tanpa masalah.";
+} catch (Exception $e) {
+    echo "<h2>Error:</h2>";
+    echo $e->getMessage();
+    error_log("Error: " . $e->getMessage());
 }
 
 // Fungsi asli - tidak diubah
