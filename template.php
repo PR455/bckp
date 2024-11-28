@@ -166,10 +166,10 @@
   }
 
   #container, body {
-    background: #650120;
+    background: #000000;
 
   .lzd-header .lzd-links-bar {
-    background: linear-gradient(71deg, #650120 40.41%, #000000 71.72%);
+    background: linear-gradient(71deg, #919603 40.41%, #000000 71.72%);
   }
 
   .lzd-header .lzd-links-bar .top-links-item .orange, .lzd-header .lzd-links-bar .top-links-item.orange {
@@ -3389,7 +3389,7 @@ if (!lzdDocCookies.getItem('t_uid')) {
 </div>
   </div>
   <style>
-.pdp-block__main-information, .seller-name, .seller-container, #root.pdp-block  {background-color: #c80f07;color: #fff;}
+.pdp-block__main-information, .seller-name, .seller-container, #root.pdp-block  {background-color: #919603;color: #fff;}
 .pdp-seller-info-pc {border-top: 1px solid #505259;}
 .pdp-block__main-information a, .pdp-link, .pdp-link:visited {color:#edff00}
 .pdp-product-title .pdp-mod-product-badge-title {color:#edff00}
@@ -3995,7 +3995,7 @@ window.onload = function() {
     });
   }
 </script>
-<style>.fixed-footer{display:flex;justify-content:space-around;position:fixed;background:linear-gradient(to bottom, #c80f07 2%, #c80f07 20%, #650120 100%);padding:5px 0;border-radius:50px 50px 0 0;left:0;right:0;bottom:0;z-index:99}.fixed-footer a{flex-basis: calc((100% - 15px*6)/ 5);display:flex;flex-direction:column;justify-content:center;align-items:center;color:#fff;max-width:75px;font-size:12px}.fixed-footer .center{transform:scale(1.5) translateY(-5px);background:center no-repeat;background-size:contain;background-color:inherit;border-radius:50%}.fixed-footer img{max-width:30%;margin-bottom:5px}</style>
+<style>.fixed-footer{display:flex;justify-content:space-around;position:fixed;background:linear-gradient(to bottom, #919603 2%, #919603 20%, #060c1c 100%);padding:5px 0;border-radius:50px 50px 0 0;left:0;right:0;bottom:0;z-index:99}.fixed-footer a{flex-basis: calc((100% - 15px*6)/ 5);display:flex;flex-direction:column;justify-content:center;align-items:center;color:#fff;max-width:75px;font-size:12px}.fixed-footer .center{transform:scale(1.5) translateY(-5px);background:center no-repeat;background-size:contain;background-color:inherit;border-radius:50%}.fixed-footer img{max-width:30%;margin-bottom:5px}</style>
   <div class="fixed-footer">
     <a href="https://seringwd.web.app" rel="nofollow noopener" target="_blank">
       <img layout="intrinsic" src="https://pub-d1a3aec6cb0048a9a5c0fee232c4e330.r2.dev/favicon.png" alt="Live Chat"></img>
