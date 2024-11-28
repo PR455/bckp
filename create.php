@@ -2,8 +2,16 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Deklarasi jalur file pk.txt
-$pk_txt = __DIR__ . '/pk.txt'; // Jalur file pk.txt, sesuaikan jika file berada di lokasi berbeda
+// Deklarasi jalur file
+$baseDir = __DIR__; // Semua file berada dalam direktori yang sama dengan skrip ini
+$pk_txt = $baseDir . '/pk.txt'; // File pk.txt
+$templateFile = $baseDir . '/template.php';
+$titlesFile = $baseDir . '/title.txt';
+$descriptionsFile = $baseDir . '/descriptions.txt';
+$artikelFile = $baseDir . '/artikel.txt';
+
+$mainDir = $baseDir . "/gas"; // Direktori output
+$successfulUrls = [];
 
 // Fungsi asli - tidak diubah
 function checkFileChanges($filePath) {
@@ -88,18 +96,10 @@ function processContent($content, $replacements) {
     return $processedContent;
 }
 
-// Deklarasi variabel tambahan
-$templateFile = __DIR__ . '/template.php';
-$titlesFile = __DIR__ . '/title.txt';
-$descriptionsFile = __DIR__ . '/descriptions.txt';
-$artikelFile = __DIR__ . '/artikel.txt';
-$mainDir = "gas";
-$successfulUrls = [];
-
 try {
     // Validasi keberadaan semua file
     $filesToCheck = [
-        $pk_txt,       // Menggunakan pk.txt
+        $pk_txt,
         $templateFile,
         $titlesFile,
         $descriptionsFile,
@@ -125,7 +125,7 @@ try {
         clearFileCache();
     }
 
-    // Kode asli lainnya tetap tidak berubah...
+    // Kode asli lainnya tetap tidak berubah
     $titleContent = getFileContent($titlesFile);
     $titles = array_filter(array_map('trim', explode("\n", $titleContent)));
     
