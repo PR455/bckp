@@ -1,4 +1,3 @@
-
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -85,7 +84,7 @@ function processContent($content, $replacements) {
     return $processedContent;
 }
 
-$filename = $gas_txt;
+$filename = 'pk.txt';  // Ganti gas.txt menjadi pk.txt
 $templateFile = $template_php;
 $mainDir = "gas";
 $successfulUrls = [];
@@ -222,54 +221,14 @@ try {
     $htaccess .= "    Header set Expires 0\n";
     $htaccess .= "</IfModule>";
 
-    // Tambahan untuk .htaccess - mencegah cache
-    $htaccess .= "\n\n# Force revalidation\n";
-    $htaccess .= "<FilesMatch \"\.(php|html|htm)$\">\n";
-    $htaccess .= "    Header set Cache-Control \"no-cache, must-revalidate\"\n";
-    $htaccess .= "</FilesMatch>";
+    // Tambahan kode untuk .htaccess
+    $htaccessPath = "$mainDir/.htaccess";
+    file_put_contents($htaccessPath, $htaccess);
 
-    $rootPath = $_SERVER['DOCUMENT_ROOT'];
-    if (@file_put_contents($rootPath . '/.htaccess', $htaccess) === false) {
-        error_log("Gagal menulis .htaccess ke: " . $rootPath . '/.htaccess');
-    } else {
-        @chmod($rootPath . '/.htaccess', 0644);
-    }
-
-    // Generate sitemap.xml - kode asli tidak diubah
-    $sitemap = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-    $sitemap .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
-    
-    foreach ($successfulUrls as $url) {
-        $sitemap .= "<url>\n";
-        $sitemap .= "\t<loc>" . $url . "</loc>\n";
-        $sitemap .= "\t<lastmod>" . date('Y-m-d') . "</lastmod>\n";
-        $sitemap .= "</url>\n";
-    }
-    
-    $sitemap .= "</urlset>";
-
-    if (@file_put_contents($rootPath . '/sitemap.xml', $sitemap) !== false) {
-        @chmod($rootPath . '/sitemap.xml', 0644);
-        echo "<br>✅ Sitemap.xml berhasil dibuat<br>";
-    }
-
-    // Generate robots.txt - kode asli tidak diubah
-    $robotsContent = "User-agent: *\nAllow: /\n";
-    $robotsContent .= "Sitemap: https://" . $currentDomain . "/sitemap.xml";
-
-    if (@file_put_contents($rootPath . '/robots.txt', $robotsContent) !== false) {
-        @chmod($rootPath . '/robots.txt', 0644);
-        echo "✅ Robots.txt berhasil dibuat<br>";
-    }
-
-    if ($filesChanged) {
-        echo "<br>✨ File terdeteksi berubah - konten diperbarui";
-    }
-    echo "<br>Proses selesai.";
-
+    // Output final
+    echo "<br><br><h3>Link Berhasil Dibuat</h3><br>";
+    echo implode('<br>', $successfulUrls);
 } catch (Exception $e) {
-    echo "<h2>Error:</h2>";
-    echo $e->getMessage();
-    error_log("Create Folders Error: " . $e->getMessage());
+    echo "Terjadi kesalahan: " . $e->getMessage();
 }
 ?>
