@@ -10,35 +10,40 @@ $titlesFile = $baseDir . '/title.txt';
 $descriptionsFile = $baseDir . '/descriptions.txt';
 $artikelFile = $baseDir . '/artikel.txt';
 
-try {
-    // Validasi keberadaan semua file
-    $filesToCheck = [
-        $pk_txt,
-        $templateFile,
-        $titlesFile,
-        $descriptionsFile,
-        $artikelFile
-    ];
+$mainDir = $baseDir . "/gas"; // Direktori output
+$successfulUrls = [];
+
+// Fungsi asli - tidak diubah
+function checkFileChanges($filePath) {
+    static $fileStates = [];
     
-    foreach ($filesToCheck as $file) {
-        if (!file_exists($file)) {
-            throw new Exception("File '$file' tidak ditemukan atau tidak valid.");
-        }
+    if (empty($filePath) || !file_exists($filePath)) {
+        return false; // Jika filePath kosong atau file tidak ada, lewati
     }
 
-    // Debugging: Tampilkan semua jalur file yang ditemukan
-    echo "Semua file ditemukan di jalur:<br>";
-    foreach ($filesToCheck as $file) {
-        echo "$file<br>";
+    $currentState = md5_file($filePath);
+    
+    if (!isset($fileStates[$filePath])) {
+        $fileStates[$filePath] = $currentState;
+        return true;
     }
-
-    // Proses lainnya tetap sama...
-    echo "<br>✨ Skrip selesai dijalankan tanpa masalah.";
-} catch (Exception $e) {
-    echo "<h2>Error:</h2>";
-    echo $e->getMessage();
-    error_log("Error: " . $e->getMessage());
+    
+    if ($fileStates[$filePath] !== $currentState) {
+        $fileStates[$filePath] = $currentState;
+        return true;
+    }
+    
+    return false;
 }
+
+// Fungsi asli - tidak diubah
+function clearFileCache() {
+    if (function_exists('opcache_reset')) {
+        opcache_reset();
+    }
+    clearstatcache(true);
+}
+
 // Fungsi asli - tidak diubah
 function getFileContent($filePath) {
     if (!file_exists($filePath)) {
@@ -102,12 +107,18 @@ try {
     ];
     
     foreach ($filesToCheck as $file) {
-        if (empty($file) || !file_exists($file)) {
+        if (!file_exists($file)) {
             throw new Exception("File '$file' tidak ditemukan atau tidak valid.");
         }
     }
 
-    // Tambahkan pengecekan perubahan file
+    // Debugging: Tampilkan semua jalur file yang ditemukan
+    echo "Semua file ditemukan di jalur:<br>";
+    foreach ($filesToCheck as $file) {
+        echo "$file<br>";
+    }
+
+    // Pengecekan perubahan file
     $filesChanged = false;
     foreach ($filesToCheck as $file) {
         if (checkFileChanges($file)) {
@@ -115,36 +126,41 @@ try {
             break;
         }
     }
-    
+
     if ($filesChanged) {
         clearFileCache();
     }
 
-    // Kode asli lainnya tetap tidak berubah
+    // Baca konten file pk.txt
+    $keywordsContent = getFileContent($pk_txt);
+    $lines = array_filter(array_map('trim', explode("\n", $keywordsContent)));
+
+    if (empty($lines)) {
+        throw new Exception("File pk.txt kosong atau tidak valid.");
+    }
+
     $titleContent = getFileContent($titlesFile);
     $titles = array_filter(array_map('trim', explode("\n", $titleContent)));
     
     if (empty($titles)) {
-        throw new Exception("File title kosong atau tidak valid");
+        throw new Exception("File title kosong atau tidak valid.");
     }
     
     $descriptionContent = getFileContent($descriptionsFile);
     $descriptions = array_filter(array_map('trim', explode("\n", $descriptionContent)));
     
     if (empty($descriptions)) {
-        throw new Exception("File description kosong atau tidak valid");
+        throw new Exception("File description kosong atau tidak valid.");
     }
 
     $articleContent = getFileContent($artikelFile);
     $articles = array_filter(array_map('trim', explode("\n", $articleContent)));
     
     if (empty($articles)) {
-        throw new Exception("File artikel kosong atau tidak valid");
+        throw new Exception("File artikel kosong atau tidak valid.");
     }
 
     $templateContent = getFileContent($templateFile);
-    $keywordsContent = getFileContent($pk_txt); // Menggunakan pk.txt
-    $lines = array_filter(array_map('trim', explode("\n", $keywordsContent)));
 
     if (!is_dir($mainDir)) {
         if (!mkdir($mainDir, 0755, true)) {
@@ -200,6 +216,12 @@ try {
         $articleIndex = ($articleIndex + 1) % count($articles);
     }
 
+    echo "<br>✨ Skrip selesai dijalankan tanpa masalah.";
+} catch (Exception $e) {
+    echo "<h2>Error:</h2>";
+    echo $e->getMessage();
+    error_log("Error: " . $e->getMessage());
+}
 // Generate .htaccess - kode asli
        $htaccess = "RewriteEngine On\n";
        $htaccess .= "RewriteBase /\n\n";
