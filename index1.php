@@ -33,19 +33,24 @@ class ContentManager {
         return false;
     }
 
+    private function formatBrandName($brand) {
+        return str_replace('-', ' ', $brand);
+    }
+
     public function getBrandContent($brand) {
         if (!$this->isValidBrand($brand)) {
             return false;
         }
 
+        $formattedBrand = $this->formatBrandName($brand);
         $index = $this->getUrlIndex($brand);
         return [
-            'title' => str_replace('{brand_name}', $brand, $this->getLine('title.txt', $index)),
-            'deskripsi' => str_replace('{brand_name}', $brand, $this->getLine('deskripsi.txt', $index)),
+            'title' => str_replace('{brand_name}', $formattedBrand, $this->getLine('title.txt', $index)),
+            'deskripsi' => str_replace('{brand_name}', $formattedBrand, $this->getLine('deskripsi.txt', $index)),
             'artikel' => $this->getLine('artikel.txt', $index),
-            'urlgambar' => str_replace('{brand_name}', $brand, $this->getLine('urlgambar.txt', $index)),
+            'urlgambar' => str_replace('{brand_name}', $formattedBrand, $this->getLine('urlgambar.txt', $index)),
             'urlpath' => "https://www.theuerkaufstails.com/{$brand}/",
-            'brandname' => $brand
+            'brandname' => $formattedBrand
         ];
     }
 
@@ -56,7 +61,7 @@ class ContentManager {
             '{artikel}' => $data['artikel'],
             '{urlgambar}' => $data['urlgambar'],
             '{urlpath}' => $data['urlpath'],
-            '{brand_name}' => strtolower($data['brandname']),
+            '{brand_name}' => $data['brandname'],
             '{brands_name}' => strtoupper($data['brandname'])
         ];
         return str_replace(array_keys($replacements), array_values($replacements), $template);
