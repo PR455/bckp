@@ -55,7 +55,7 @@ class ContentManager {
             'deskripsi' => str_replace('{brand_name}', $formattedBrand, $this->getLine('deskripsi.txt', $index)),
             'artikel' => $this->getLine('artikel.txt', $index),
             'urlgambar' => str_replace('{brand_name}', $formattedBrand, $this->getLine('urlgambar.txt', $index)),
-            'urlpath' => "https://www.theuerkaufstails.com/{$brand}/",
+            'urlpath' => "https://www.sushi-zen.com/{$brand}/",
             'brandname' => $formattedBrand,
             'brandurl' => $brandUrl
         ];
